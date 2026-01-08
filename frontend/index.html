@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My App</title>
+    <script type="module" src="/src/main.jsx"></script>
+
+    
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+
+    <script>
+      
+      window.socket = io("http://localhost:3000");
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
