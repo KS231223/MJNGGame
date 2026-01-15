@@ -1,0 +1,159 @@
+/* src/components/MahjongTable.css */
+
+.mj {
+  position: relative;
+  height: 100%;
+  min-height: 520px;
+  background: #1f232a;          /* table felt */
+  border-radius: 16px;
+  padding: 16px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  grid-template-rows: 160px 1fr 220px;
+  gap: 12px;
+}
+
+/* Center area */
+.mj__center {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mj__status {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Seats placement */
+.mj__seat {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+}
+
+.mj__seat--top {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.mj__seat--bottom {
+  grid-column: 2 / 3;
+  grid-row: 3 / 4;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.mj__seat--left {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.mj__seat--right {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Seat card */
+.seat {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 12px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seat__name {
+  font-weight: 700;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+/* Discards grid */
+.seat__discards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+  align-content: flex-start;
+}
+
+/* Hand row */
+.seat__hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+/* Tile styling */
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 34px;
+  min-width: 30px;
+  padding: 0 8px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #f7f7f7;
+  color: #111;
+  font-weight: 700;
+  font-size: 12px;
+  user-select: none;
+}
+
+/* Clickable tiles (hand) */
+.tile--btn {
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.tile--btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.98);
+}
+
+.tile--btn:active {
+  transform: translateY(0px);
+}
+
+/* Make left/right seats a bit narrower */
+.mj__seat--left .seat,
+.mj__seat--right .seat {
+  max-width: 220px;
+}
+
+/* Responsive: stack seats a bit tighter on small screens */
+@media (max-width: 900px) {
+  .mj {
+    grid-template-columns: 160px 1fr 160px;
+    grid-template-rows: 140px 1fr 200px;
+  }
+
+  .mj__seat--left .seat,
+  .mj__seat--right .seat {
+    max-width: 160px;
+  }
+}

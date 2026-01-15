@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { socket } from "../socket";
 import Chat from "../components/chat";
+import MahjongTable from "../components/MahjongTable";
 import "./TablePage.css";
 
 export default function TablePage() {
@@ -10,11 +11,48 @@ export default function TablePage() {
   const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(true);
 
+  const [tableState, setTableState] = useState(null);
+  const [connected, setConnected] = useState(socket.connected);
+
+  useEffect(() => {
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
+
   useEffect(() => {
     if (!tableId) return;
+
     socket.emit("join-table", { tableId });
-    return () => socket.emit("leave-table", { tableId });
+
+    const onState = (state) => setTableState(state);
+    const onUpdate = (patch) => {
+      // simplest version: backend sends full state as "patch"
+      // later you can implement real patching/immer
+      setTableState((prev) => ({ ...(prev ?? {}), ...patch }));
+    };
+
+    socket.on("table-state", onState);
+    socket.on("table-update", onUpdate);
+
+    return () => {
+      socket.off("table-state", onState);
+      socket.off("table-update", onUpdate);
+      socket.emit("leave-table", { tableId });
+    };
   }, [tableId]);
+
+  // send actions to backend
+  const actions = {
+    draw: () => socket.emit("game-action", { tableId, type: "draw" }),
+    discard: (tile) => socket.emit("game-action", { tableId, type: "discard", tile }),
+    call: (callType) => socket.emit("game-action", { tableId, type: "call", callType }),
+  };
 
   return (
     <div className={`tablepage ${chatOpen ? "tablepage--chat-open" : ""}`}>
@@ -22,7 +60,7 @@ export default function TablePage() {
         <h2 className="tablepage__title">Table: {tableId}</h2>
 
         <div className="tablepage__actions">
-          <button className="tablepage__btn" onClick={() => setChatOpen(v => !v)}>
+          <button className="tablepage__btn" onClick={() => setChatOpen((v) => !v)}>
             {chatOpen ? "Hide chat" : "Show chat"}
           </button>
 
@@ -34,7 +72,15 @@ export default function TablePage() {
 
       <main className="tablepage__main">
         <section className="tablepage__board">
-          <div className="board__card">Mahjong table UI goes here</div>
+          {!connected && <div className="board__card">Disconnected…</div>}
+
+          {connected && !tableState && (
+            <div className="board__card">Loading table…</div>
+          )}
+
+          {tableState && (
+            <MahjongTable state={tableState} actions={actions} />
+          )}
         </section>
 
         <aside className={`tablepage__chat ${chatOpen ? "" : "is-hidden"}`}>
