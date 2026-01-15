@@ -9,7 +9,7 @@ class Table:
     
     def add_player(self, player: Player):
         self.players[player.sid] = player
-        Game.add_player(player)
+        self.game.add_player(player)
     
     def remove_player(self, player_sid):
         self.players.pop(player_sid, None)

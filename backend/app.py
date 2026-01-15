@@ -11,7 +11,7 @@ CORS(app,resources={r"/*":{"origins":"*"}})
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 
-tables = {} #dict of table_id:table objects (creating now)
+tables = {} #dict of table_id:table objects 
 
 @app.route("/")
 def home():
@@ -28,7 +28,7 @@ def on_join_table(data):
         table.add_player(player)
         message = f"{request.sid} created {table_id}"
     else:
-        tables[table_id] = Table(table_id, player)
+        tables[table_id] = Table(table_id)
         tables[table_id].add_player(player)
         message = f"{request.sid} joined {table_id}"
 
