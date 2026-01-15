@@ -78,9 +78,10 @@ export default function TablePage() {
             <div className="board__card">Loading table…</div>
           )}
 
-          {tableState && (
-            <MahjongTable state={tableState} actions={actions} />
-          )}
+          {tableState?.started
+            ? <MahjongTable state={tableState} actions={actions} />
+            : <div className="board__card">Waiting for players…</div>
+          }
         </section>
 
         <aside className={`tablepage__chat ${chatOpen ? "" : "is-hidden"}`}>

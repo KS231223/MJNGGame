@@ -42,6 +42,7 @@ def on_join_table(data):
         emit("chat-message",
              {"sender": "system", "message": "Start Game!"},
              to=table_id)
+        emit("table-state", table.to_state(for_sid=request.sid), to=table_id)
     
 @socketio.on("send-message")
 def on_send_message(data):

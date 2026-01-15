@@ -12,13 +12,14 @@ class Game:
         self.feng = 1
         self.banker_index = 1
         self.norm_direction = True
+        self.started = False
 
     def add_player(self, player):
         self.players.append(player)
 
     def start_game(self):
         self.state = "in progress"
-
+        self.started = True
         random.shuffle(self.players)
 
         for seat, p in enumerate(self.players, start=1):  # seats 1..4
