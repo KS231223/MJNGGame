@@ -22,20 +22,21 @@ def on_join_table(data):
     table_id = data["tableId"]
     join_room(table_id)
     player = Player(request.sid) #create the new player, add username?
-    table = tables.get(table_id)
+    table = tables.get(table_id, None)
 
-    if table:
+    if table is not None:
         table.add_player(player)
-        message = f"{request.sid} created {table_id}"
+        message = f"{request.sid} joined {table_id}"
     else:
         tables[table_id] = Table(table_id)
         tables[table_id].add_player(player)
-        message = f"{request.sid} joined {table_id}"
+        message = f"{request.sid} created {table_id}"
 
     emit("chat-message",
          {"sender": "system", "message": message},
          to=table_id)
     
+    table = tables.get(table_id)
     if len(table.players) == 4:
         table.start_game()
         emit("chat-message",
@@ -57,7 +58,7 @@ def on_leave_room(data):
     table_id = data["tableId"]
     leave_room(table_id)
     
-    table = tables[table_id]
+    table = tables.get(table_id, None)
     table.remove_player(request.sid)
     if len(table.players) < 1:
         tables.pop(table_id)
@@ -66,8 +67,6 @@ def on_leave_room(data):
          {"sender": "system", "message": f"{request.sid} left {table_id}"},
          to=table_id)
     
-    
-
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5000, debug=True)

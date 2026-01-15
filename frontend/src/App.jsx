@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/Homepage";
-import Table from "./pages/Table";
+import Table from "./pages/Tablepage";
 
 export default function App() {
   return (

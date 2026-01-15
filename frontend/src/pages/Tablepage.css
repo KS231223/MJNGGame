@@ -1,0 +1,47 @@
+.tablepage {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tablepage__topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.tablepage__chat.is-hidden {
+  display: none;
+}
+
+.tablepage__actions {
+  margin-left: auto;       /* pushes buttons to the far right */
+  display: flex;
+  gap: 8px;
+}
+
+.tablepage__main {
+  flex: 1;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 360px;  /* board + chat */
+  min-height: 0;
+}
+
+.tablepage__board {
+  min-height: 0;
+  overflow: auto;
+}
+
+.tablepage__chat {
+  min-height: 0;
+  border-left: 1px solid #ddd;
+  background: #fff;
+  display: flex;           /* important */
+}
+
+.tablepage:not(.tablepage--chat-open) .tablepage__main {
+  grid-template-columns: 1fr 0;
+}
