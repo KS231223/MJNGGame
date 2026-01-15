@@ -1,4 +1,6 @@
 from tile import Tile
+from random import random
+
 
 #do we need a dict to count number of each type of tile?
 #should we create just one of each tile and then counter of num of that type? or each tile need unique?
@@ -36,6 +38,10 @@ class Deck:
             new = Tile("point", "animal", num, 1)
             tiles.append(new)
         return tiles
+    
+    def draw_tile(self):
+        tile = self.tiles.pop(random.randint(0, len(self.tiles)))
+        return tile
     
 if __name__ == "__main__":
     test = Deck()

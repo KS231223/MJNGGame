@@ -28,8 +28,8 @@ def on_join_table(data):
         table.add_player(player)
         message = f"{request.sid} created {table_id}"
     else:
-        tables["table_id"] = Table(table_id, player)
-        tables["table_id"].add_player(player)
+        tables[table_id] = Table(table_id, player)
+        tables[table_id].add_player(player)
         message = f"{request.sid} joined {table_id}"
 
     emit("chat-message",
@@ -37,7 +37,7 @@ def on_join_table(data):
          to=table_id)
     
     if len(table.players) == 4:
-        table.game_start = True
+        table.start_game()
         emit("chat-message",
              {"sender": "system", "message": "Start Game!"},
              to=table_id)
