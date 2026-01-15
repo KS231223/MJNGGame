@@ -1,0 +1,30 @@
+.home {
+  padding: 24px;
+}
+
+.home__title {
+  margin: 0 0 16px;
+}
+
+.home__row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.home__input {
+  padding: 10px 12px;
+  font-size: 16px;
+  width: 280px;
+}
+
+.home__button {
+  padding: 10px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.home__error {
+  margin-top: 12px;
+  color: #b00020;
+}

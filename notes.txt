@@ -1,0 +1,14 @@
+TILE:
+Power tiles:
+- winds are represented by suit: wind, number = 1,2,3,4 (dong, nan, xi, bei)
+- same for big tiles, suit = power, number = 1,2,3 (hong zhong, fa, bai ban)
+
+point tiles:
+- flowers are just suit = flowers, number = 1,2,3,4
+- animals are suit = animals, number = 1,2,3,4 (chicken, centipede, cat, mouse)
+
+normal tiles:
+- self explanatory, suit = ball,stick,wan, number = 1-9
+
+
+
