@@ -63,10 +63,11 @@ class Game:
 
         #return player order for frontend to switch the seats
         #also return the starting hand
-    def discard_tile(self):
+    def discard_tile(self, sid, tile):
         # HAVE TO PUT THE SOCKET HERE TO DISCARD TILE WHICH EMITS TO THE APP.PY TO ASK WHICH TILE TO DISCARD AND RETURNS THE TILE
-        tileID = None #placeholder for now realistically what should happen is that you hear for the correct tileID and then that tile ID is emitted
-        self.lastDiscardedTile = self.players[self.turn_index].discard_tile(tileID)
+        tile_id = tile.get("uid")
+        player = self.players[self.turn_index - 1]
+        self.lastDiscardedTile = player.discard_tile(tile_id)
         self.discardPile.append(self.lastDiscardedTile)
         
         
@@ -94,37 +95,30 @@ class Game:
 
         validator = self.validator_2
         reactions = validator.get_all_players_reactions(self.lastDiscardedTile)
-        #this is a dummy  listener obviously it doesnt work because this just appends every possible action and there is no listener
-        #also need to implement kang, pong and chi
-        def dummy_listener(player_reactions):
-            action_list = []
-            for sid, actions in player_reactions.items():
-                for action in actions:
-                    action_list.append((sid, action))
-            return action_list
+        sid_order = order_reaction_sids(reactions)
+        return reactions, sid_order
 
-        actions_queue = dummy_listener(reactions)
-        if actions_queue:
-            priority = {"win": 4, "kong": 3, "pong": 2, "chi": 1}
-            actions_queue.sort(key=lambda x: priority.get(x[1], 0), reverse=True)
-            top_action = actions_queue[0]
 
-            sid, action = top_action
-            player = next(p for p in self.players if p.sid == sid)
 
-            if action == "win":
-                self.gameWon = True
-                return
-            else:
-                player.add_tile(self.lastDiscardedTile)
-                self.discard_tile()
+        # top_action = actions_queue[0]
 
-            self.second_phase()
-        else:
-            self.turn_index = (self.turn_index) % len(self.players) + 1
-            self.first_phase()
+        # sid, action = top_action
+        # player = next(p for p in self.players if p.sid == sid)
 
-            
+        # if action == "win":
+        #     self.gameWon = True
+        #     return
+        # else:
+        #     player.add_tile(self.lastDiscardedTile)
+        #     self.discard_tile()
+
+        # self.second_phase()
+        # else:
+        #     return None
+        #     self.turn_index = (self.turn_index) % len(self.players) + 1
+        #     self.first_phase()
+
+    
         
 """
 Schema for player entity
@@ -143,3 +137,30 @@ Schema for hands from initialize_hands
 {"tiles":playerTiles,
 "points":playerPoints}
 """
+
+#hlper func
+PRIORITY = {"win": 4, "kong": 3, "pong": 2, "chi": 1}
+def order_reaction_sids(reactions: dict, priority: dict = PRIORITY):
+    """
+    reactions: dict[sid] -> list[(action:str, payload:any)]
+    Returns: list[sid] sorted by each sid's BEST action priority (desc).
+    Players with no actions are excluded.
+    """
+    ranked = []
+
+    for sid, actions in reactions.items():
+        if not actions:
+            continue
+
+        # ensure per-player actions are sorted best-first
+        actions_sorted = sorted(actions, key=lambda ap: priority.get(ap[0], 0), reverse=True)
+
+        best_action = actions_sorted[0][0]
+        best_prio = priority.get(best_action, 0)
+
+        ranked.append((best_prio, sid))
+
+    # sort by priority desc
+    ranked.sort(key=lambda x: x[0], reverse=True)
+
+    return [sid for _, sid in ranked]
