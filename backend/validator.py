@@ -25,6 +25,9 @@ class Phase2Validator:
             return reactions_by_player
 
         for player in self.game.players:
+            if self.game.turn_index == player.seat:
+                #you had the time in the first phase
+                continue
             actions = []
 
             count = sum(1 for t in player.tileHand if t.ID == last_discarded_tile.ID)
@@ -46,7 +49,9 @@ class Phase2Validator:
                         actions.append("chi")
                         
                         break
-
+            if False:
+                #this is just a placeholder until I get the win conditional
+                actions.append("win")                
             
             reactions_by_player[player.sid] = actions
 
