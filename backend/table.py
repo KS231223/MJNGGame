@@ -18,56 +18,28 @@ class Table:
     
     def remove_player(self, player_sid):
         self.players.pop(player_sid, None)
-        self.game.remove_player(player_sid, None)
+        self.game.remove_player(player_sid)
     
     def start_game(self):
         self.game.start_game()
 
-    def to_state(self, for_sid: str):
-        player_objs = list(self.players.values())
-
-        players_state = [
-            {
-                "id": p.sid,
-                "seat": p.seat,
-                "name": p.name or p.sid[:5],
-                "revealedHand":p.revealedHand,
-                "tileHand":p.tileHand,
-                "pointHand":p.pointHand,
-                "money":p.money
-
-            }
-            for p in player_objs
-        ]
-        """
-        Schema for player
-        self.sid = sid
-        self.money = 1000
-        self.points = 0
-        self.seat = 0
-        self.revealedhand = []
-        self.tileHand = []
-        self.pointHand = []
-        self.name = None
-        """
-        me = self.players.get(for_sid)
-
-        state = {
+    def to_state(self):        
+        #need to return deck? actually no need horh. should i return like the top 5 of the deck?
+        
+        table_state = {
             "tableId": self.id,
 
-            # IMPORTANT: this must become True after start_game()
             "started": bool(getattr(self.game, "started", False)),
 
-            "players": players_state,
-
-            "dealerSeat": getattr(self.game, "dealer_seat", None),
-            "currentTurnSeat": getattr(self.game, "current_turn_seat", None),
-
-            "discards": getattr(self.game, "discards", {0: [], 1: [], 2: [], 3: []}),
-            "melds": getattr(self.game, "melds", {0: [], 1: [], 2: [], 3: []}),
-            "wallCount": getattr(self.game, "wall_count", None),
-
-            "yourSeat": me.seat if me else None,
-            "yourHand": me.hand if me else [],
+            "banker_index": getattr(self.game, "banker_index", None),
+            "turn_index": getattr(self.game, "turn_index", None),
+            "feng": getattr(self.game, "feng", 1),
+            "round": getattr(self.game, "round", 1),
+            "norm_direction": getattr(self.game, "norm_direction", True),
+            #like mini states for each player that should be public
+            "players": [
+                {"sid": p.sid, "seat": p.seat, "name": p.name, "money": p.money}
+                for p in self.players.values()
+                ]
         }
-        return state
+        return table_state

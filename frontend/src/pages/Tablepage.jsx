@@ -30,18 +30,18 @@ export default function TablePage() {
 
     socket.emit("join-table", { tableId });
 
-    const onState = (state) => setTableState(state);
+    const onStart = (state) => setTableState(state);
     const onUpdate = (patch) => {
       // simplest version: backend sends full state as "patch"
       // later you can implement real patching/immer
       setTableState((prev) => ({ ...(prev ?? {}), ...patch }));
     };
 
-    socket.on("table-state", onState);
+    socket.on("game-start", onStart);
     socket.on("table-update", onUpdate);
 
     return () => {
-      socket.off("table-state", onState);
+      socket.off("game-start", onStart);
       socket.off("table-update", onUpdate);
       socket.emit("leave-table", { tableId });
     };

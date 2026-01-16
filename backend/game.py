@@ -3,8 +3,7 @@ import random
 
 class Game:
     def __init__(self):
-        # for game states like turns, feng, banker etc
-        self.state = "waiting for players" #3 states: waiting for players, in progress, game finished (all 4 fengs)
+        self.state = "waiting for players"
         self.deck = Deck()
         self.players = []
         self.round = 1
@@ -13,28 +12,47 @@ class Game:
         self.banker_index = 1
         self.norm_direction = True
         self.started = False
-        self.deck.create_deck
+        self.drawn = []
 
     def add_player(self, player):
         self.players.append(player)
     
     def remove_player(self, player_sid):
-        #doesnt work, this is list
-        #TODO fix this shit
-        self.players.pop(player_sid)
+        self.players = [p for p in self.players if p.sid != player_sid]
+    
+    def initialize_hands(self):
+        arrayOfHands = []
+        #for each array there should be a dictionary called points and hand and each have their own array
+        for _ in range(4):
+            playerPoints = []
+            playerTiles = []    
+            while len(playerTiles) < 13:
+                currentTile = self.deck.draw_tile()
+                if currentTile.type != "point":
+                    playerTiles.append(currentTile.to_dict())
+
+                else:
+                    playerPoints.append(currentTile.to_dict())
+                self.drawn.append(currentTile)
+            arrayOfHands.append({"tiles":playerTiles,
+                                 "points":playerPoints})
+        return arrayOfHands
+    
+
 
     def start_game(self):
         self.state = "in progress"
         self.started = True
         random.shuffle(self.players)
+        random.shuffle(self.deck.tiles)
         # p is player
         for seat, p in enumerate(self.players, start=1):  # seats 1..4
             p.seat = seat
-        listOfHands = self.deck.initialize_hands
+        listOfHands = self.initialize_hands()
         for player in self.players:
             currentHand = listOfHands.pop()
-            player.tileHand = currentHand.tiles
-            player.pointHand = currentHand.points
+            player.tileHand = currentHand.get("tiles")
+            player.pointHand = currentHand.get("points")
 
 
         #return player order for frontend to switch the seats

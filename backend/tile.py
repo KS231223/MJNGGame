@@ -15,3 +15,11 @@ class Tile:
 
     def __str__(self):
         return self.id
+    
+    def to_dict(self):
+        return {
+            "uid": self.id,
+            "type": self.type,
+            "suit": self.suit,
+            "number": self.number,
+        }

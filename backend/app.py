@@ -43,9 +43,13 @@ def on_join_table(data):
         emit("chat-message",
              {"sender": "system", "message": "Start Game!"},
              to=table_id)
-        #need to decouple, make the frontend ALL send in a request for game-start
-        #or just... fuck it use the sid in the players list and send 4 emits
-        emit("table-state", table.game.state, to=table_id)
+
+        table_state = table.to_state()
+        for player_sid in table.players.keys():
+            player_state = table.players[player_sid].to_state()
+            data = {"player_state": player_state, "table_state": table_state}
+            print(data)
+            emit("game-start", data, to=player_sid)
     
 @socketio.on("send-message")
 def on_send_message(data):
