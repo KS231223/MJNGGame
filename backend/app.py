@@ -54,10 +54,22 @@ def on_join_table(data):
 def game_action(data):
     table_id = data["tableId"]
     sid = request.sid
+    table = tables.get(table_id)
     if data["type"] == "draw":
-        table = tables.get(table_id)
         possible_actions, tile = table.game.first_phase(sid)
-        emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)        
+        emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
+    elif data["type"] == "discard":
+        tile = data["tile"]
+        table.game.discard_tile(sid, tile)
+        reactions, sid_order = table.game.second_phase()
+
+        while sid_order:
+            sid = sid_order.pop()
+            emit("reaction-options", {"actions": reactions[sid]}, to=sid)
+            #add something to wait for response before sending next one, if action taken then break
+
+
+  
 
 @socketio.on("send-message")
 def on_send_message(data):

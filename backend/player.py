@@ -19,7 +19,7 @@ class Player:
         tileToReturn = None
         for i in range(len(self.tileHand)):
             tile = self.tileHand[i]
-            if tileID == tile.ID:
+            if tileID == tile.get("uid"):
                 tileToReturn = self.tileHand.pop(i)
                 break
         return tileToReturn
