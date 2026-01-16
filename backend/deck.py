@@ -54,7 +54,8 @@ class Deck:
                     playerTiles.append(currentTile)
                 else:
                     playerPoints.append(currentTile)
-            arrayOfHands.append([playerTiles,playerPoints])
+            arrayOfHands.append({"tiles":playerTiles,
+                                 "points":playerPoints})
         return arrayOfHands
 
     

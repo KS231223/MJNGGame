@@ -8,3 +8,15 @@ class Player:
         self.tileHand = []
         self.pointHand = []
         self.name = None
+    def add_tile(self,tile):
+        self.tileHand.append(tile)
+    def add_point(self,point):
+        self.pointHand.append(point)
+    def discard_tile(self,tileID):
+        tileToReturn = None
+        for i in range(len(self.tileHand)):
+            tile = self.tileHand[i]
+            if tileID == tile.ID:
+                tileToReturn = self.tileHand.pop(i)
+                break;
+        return tileToReturn;
