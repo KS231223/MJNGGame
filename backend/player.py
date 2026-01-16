@@ -7,7 +7,7 @@ class Player:
         self.revealedHand = []
         self.tileHand = []
         self.pointHand = []
-        self.name = "penis"
+        self.name = sid
 
     def add_tile(self,tile):
         self.tileHand.append(tile)

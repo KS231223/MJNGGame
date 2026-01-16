@@ -30,7 +30,52 @@ export default function TablePage() {
 
     socket.emit("join-table", { tableId });
 
-    const onStart = (state) => setTableState(state);
+    const onStart = ({ table_state, player_state }) => {
+      // Merge shared + private into one object
+      const merged = {
+        ...table_state,
+        ...player_state,
+        // rename if you want:
+        yourSid: player_state.id,
+        yourSeat: player_state.seat,
+      };
+
+      // Build an ordered list of players by seat (works even if seat numbers aren't 0..3)
+      const players = Array.isArray(table_state.players) ? [...table_state.players] : [];
+      players.sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
+
+      // Find "me" inside the table_state list (by sid)
+      const myIndex = players.findIndex((p) => p.sid === player_state.id);
+
+      // If we can't find ourselves, still set state and bail
+      if (myIndex === -1) {
+        merged.players = players;
+        setTableState(merged);
+        return;
+      }
+
+      const n = players.length;
+
+      // Relative positions (clockwise): you(bottom)=0, right=1, opposite=2, left=3
+      const rel = (offset) => players[(myIndex + offset + n) % n];
+
+      merged.seats = {
+        bottom: rel(0),
+        right: rel(1),
+        top: rel(2),
+        left: rel(3),
+      };
+
+      // Also keep players sorted for general use
+      merged.players = players;
+
+      // Your hand fields: normalize names for MahjongTable
+      merged.yourHand = player_state.tileHand ?? [];
+      merged.pointHand = player_state.pointHand ?? [];
+      merged.revealedHand = player_state.revealedHand ?? [];
+
+      setTableState(merged);
+    };
     const onUpdate = (patch) => {
       // simplest version: backend sends full state as "patch"
       // later you can implement real patching/immer

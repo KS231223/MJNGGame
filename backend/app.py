@@ -48,7 +48,6 @@ def on_join_table(data):
         for player_sid in table.players.keys():
             player_state = table.players[player_sid].to_state()
             data = {"player_state": player_state, "table_state": table_state}
-            print(data)
             emit("game-start", data, to=player_sid)
     
 @socketio.on("send-message")

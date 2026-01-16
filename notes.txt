@@ -5,7 +5,7 @@ Power tiles:
 
 point tiles:
 - flowers are just suit = flowers, number = 1,2,3,4
-- animals are suit = animals, number = 1,2,3,4 (chicken, centipede, cat, mouse)
+- animals are suit = animals, number = 1,2,3,4 (cat, mouse, chicken, centipede)
 
 normal tiles:
 - self explanatory, suit = ball,stick,wan, number = 1-9

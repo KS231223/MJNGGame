@@ -28,6 +28,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow: hidden; /* no page scroll */
+
 }
 
 h1 {
@@ -65,4 +67,9 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }

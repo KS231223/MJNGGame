@@ -1,159 +1,184 @@
 /* src/components/MahjongTable.css */
 
 .mj {
-  position: relative;
   height: 100%;
-  min-height: 520px;
-  background: #1f232a;          /* table felt */
-  border-radius: 16px;
-  padding: 16px;
+  width: 100%;
+  background: linear-gradient(135deg, #2d5016 0%, #3d6826 50%, #2d5016 100%);
+  border: 20px solid #8b4513;
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 0 50px rgba(0,0,0,0.3),
+    0 10px 30px rgba(0,0,0,0.5);
+  position: relative;
+  padding: 20px;
   overflow: hidden;
+  min-height: 0;
+
   display: grid;
   grid-template-columns: 220px 1fr 220px;
-  grid-template-rows: 160px 1fr 220px;
+  grid-template-rows: auto 1fr auto;
   gap: 12px;
+  box-sizing: border-box;
 }
 
-/* Center area */
+/* center area */
 .mj__center {
   grid-column: 2 / 3;
   grid-row: 2 / 3;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
 }
 
 .mj__status {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.8);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 10;
 }
 
-/* Seats placement */
-.mj__seat {
+.discard-pile {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  max-width: 280px;
+  padding: 16px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+}
+
+/* seat placement */
+.mj__seat--top    { grid-column: 2 / 3; grid-row: 1 / 2; }
+.mj__seat--left   { grid-column: 1 / 2; grid-row: 2 / 3; }
+.mj__seat--right  { grid-column: 3 / 4; grid-row: 2 / 3; }
+.mj__seat--bottom { grid-column: 1 / 4; grid-row: 3 / 4; }
+
+.mj__seat--top,
+.mj__seat--left,
+.mj__seat--right,
+.mj__seat--bottom,
+.seat {
   min-height: 0;
   min-width: 0;
-  display: flex;
-}
-
-.mj__seat--top {
-  grid-column: 2 / 3;
-  grid-row: 1 / 2;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.mj__seat--bottom {
-  grid-column: 2 / 3;
-  grid-row: 3 / 4;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-.mj__seat--left {
-  grid-column: 1 / 2;
-  grid-row: 2 / 3;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.mj__seat--right {
-  grid-column: 3 / 4;
-  grid-row: 2 / 3;
-  justify-content: flex-end;
-  align-items: center;
 }
 
 /* Seat card */
 .seat {
+  height: 100%;
   width: 100%;
-  max-width: 520px;
+  min-height: 0;
+
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 14px;
   padding: 12px;
   color: #fff;
+
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
+}
+
+.seat__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 6px;
 }
 
 .seat__name {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   opacity: 0.95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seat__score {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 /* Discards grid */
 .seat__discards {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  min-height: 44px;
+  gap: 3px;
+  min-height: 30px;
   align-content: flex-start;
+  overflow: hidden;
+  padding: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+/* Hand area with melds */
+.seat__hand-area {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+}
+
+.revealed-melds {
+  display: flex;
+  gap: 8px;
+}
+
+.meld {
+  display: flex;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
 }
 
 /* Hand row */
 .seat__hand {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  flex-wrap: nowrap;
+  gap: 2px;
+  align-items: flex-end;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px;
+  background: rgba(139, 69, 19, 0.3);
+  border-radius: 8px;
 }
 
-/* Tile styling */
-.tile {
-  display: inline-flex;
+.seat__hand::-webkit-scrollbar {
+  height: 8px;
+}
+
+/* Make top/left/right seats look tighter */
+.mj__seat--top .seat {
   align-items: center;
-  justify-content: center;
-
-  height: 34px;
-  min-width: 30px;
-  padding: 0 8px;
-
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #f7f7f7;
-  color: #111;
-  font-weight: 700;
-  font-size: 12px;
-  user-select: none;
 }
 
-/* Clickable tiles (hand) */
-.tile--btn {
-  cursor: pointer;
-  transition: transform 120ms ease, filter 120ms ease;
-}
-
-.tile--btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(0.98);
-}
-
-.tile--btn:active {
-  transform: translateY(0px);
-}
-
-/* Make left/right seats a bit narrower */
 .mj__seat--left .seat,
 .mj__seat--right .seat {
-  max-width: 220px;
+  padding: 10px;
+}
+.mj__seat--bottom .seat {
+  padding: 10px 12px;
 }
 
-/* Responsive: stack seats a bit tighter on small screens */
+/* Responsive */
 @media (max-width: 900px) {
   .mj {
     grid-template-columns: 160px 1fr 160px;
-    grid-template-rows: 140px 1fr 200px;
-  }
-
-  .mj__seat--left .seat,
-  .mj__seat--right .seat {
-    max-width: 160px;
+    grid-template-rows: 120px 1fr 210px;
   }
 }
