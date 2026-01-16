@@ -4,7 +4,7 @@ class Player:
         self.money = 1000
         self.points = 0
         self.seat = 0
-        self.hand = []
+        self.revealedHand = []
         self.tileHand = []
         self.pointHand = []
         self.name = None

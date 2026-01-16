@@ -31,10 +31,25 @@ class Table:
                 "id": p.sid,
                 "seat": p.seat,
                 "name": p.name or p.sid[:5],
+                "revealedHand":p.revealedHand,
+                "tileHand":p.tileHand,
+                "pointHand":p.pointHand,
+                "money":p.money
+
             }
             for p in player_objs
         ]
-
+        """
+        Schema for player
+        self.sid = sid
+        self.money = 1000
+        self.points = 0
+        self.seat = 0
+        self.revealedhand = []
+        self.tileHand = []
+        self.pointHand = []
+        self.name = None
+        """
         me = self.players.get(for_sid)
 
         state = {
