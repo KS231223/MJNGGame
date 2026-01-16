@@ -132,6 +132,19 @@
   border-top: 1px solid rgba(255,255,255,0.10);
 }
 
+.seat__hand {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 0;               /* remove gaps */
+}
+
+/* overlap tiles a bit */
+.seat__hand .tilebtn + .tilebtn {
+  margin-left: -10px;   /* tweak: -6 to -14 */
+}
+
+
 .revealed-melds {
   display: flex;
   gap: 8px;

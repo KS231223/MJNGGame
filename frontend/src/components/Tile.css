@@ -1,29 +1,5 @@
-.hand {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
+/* src/components/Tile.css */
 
-.hand--back {
-  flex-direction: row;
-  justify-content: center;
-}
-
-.hand--side {
-  flex-direction: column;
-  justify-content: center;
-}
-
-.tileimg {
-  height: 56px;
-  width: auto;
-  display: block;
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-/* Tile button */
 .tilebtn {
   background: none;
   border: none;
@@ -31,41 +7,14 @@
   cursor: pointer;
   transition: transform 0.15s ease;
   position: relative;
+  display: inline-flex;
+  line-height: 0;
 }
 
-.tilebtn:not(.disabled):hover {
-  transform: translateY(-8px);
-}
+.tilebtn:not(.disabled):hover { transform: translateY(-8px); z-index: 10; }
+.tilebtn:not(.disabled):active { transform: translateY(-4px); }
 
-.tilebtn:not(.disabled):active {
-  transform: translateY(-4px);
-}
-
-.tilebtn.disabled {
-  cursor: not-allowed;
-  opacity: 0.9;
-}
-
-/* Size variants */
-.tilebtn.tile-large .tileimg {
-  height: 67px;
-}
-
-.tilebtn.tile-small .tileimg {
-  height: 44px;
-}
-
-.tilebtn.tile-tiny .tileimg {
-  height: 34px;
-}
-
-/* Opponents' hidden hands remain smaller */
-.hand--back .tileimg,
-.hand--side .tileimg {
-  height: 32px;
-}
-
-/* ===== Layer frame + face for Tile component ONLY ===== */
+.tilebtn.disabled { cursor: not-allowed; opacity: 0.9; }
 
 .tilewrap {
   position: relative;
@@ -73,20 +22,28 @@
   line-height: 0;
 }
 
-/* The frame is just a normal tileimg (size comes from your existing .tileimg rules) */
-.tileimg--frame {
+.tileimg {
+  height: 56px;
+  width: auto;
   display: block;
+  user-select: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-/* Overlay the face on top of the frame */
+/* clicks go to button, not the images */
+.tilebtn .tileimg { pointer-events: none; }
+
 .tileimg--face {
   position: absolute;
   inset: 0;
   height: 100%;
   width: 100%;
   object-fit: contain;
-
-  /* shrink slightly so frame border is visible */
-  transform: scale(0.86);
+  transform: scale(0.86) translate(-2px, 2px);
   transform-origin: center;
 }
+
+/* size variants */
+.tilebtn.tile-large .tileimg { height: 67px; }
+.tilebtn.tile-small .tileimg { height: 44px; }
+.tilebtn.tile-tiny  .tileimg { height: 34px; }

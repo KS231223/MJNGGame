@@ -79,7 +79,7 @@ export default function MahjongTable({ state, actions }) {
                   <Tile
                     key={t.uid}
                     tile={t}
-                    onClick={(tile) => actions?.discard?.(tile)}
+                    onClick={(tile) => actions?.discard?.(tile)} //ADD THE CLICKING LOGIC FROM THIS FUNC?
                     disabled={currentTurnSeat !== yourSeat}
                   />
                 ))}

@@ -1,0 +1,39 @@
+/* src/components/HiddenHand.css */
+
+.hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* tighter spacing */
+  gap: 0px;
+}
+
+/* top player (back view): row */
+.hand--back {
+  flex-direction: row;
+}
+
+/* left/right players (side view): column */
+.hand--side {
+  flex-direction: column;
+}
+
+/* ONLY hidden tiles */
+.handtile {
+  height: 32px;
+  width: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+/* overlap a bit so it looks like a stacked wall/hand */
+.hand--back .handtile + .handtile {
+  margin-left: -5px; /* adjust: -6 to -14 */
+}
+
+.hand--side .handtile + .handtile {
+  margin-top: -3px; /* adjust: -6 to -14 */
+}

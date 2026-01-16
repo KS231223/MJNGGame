@@ -20,9 +20,7 @@ export default function Tile({ tile, onClick, disabled, size = "normal" }) {
       title={tile?.uid ?? ""}
     >
       <span className="tilewrap">
-        {/* frame behind */}
         <img className="tileimg tileimg--frame" src={frameSrc} alt="" draggable={false} />
-        {/* face on top */}
         <img className="tileimg tileimg--face" src={faceSrc} alt={tile?.uid ?? "tile"} draggable={false} />
       </span>
     </button>

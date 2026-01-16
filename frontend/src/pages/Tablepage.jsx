@@ -1,5 +1,5 @@
 // src/pages/TablePage.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { socket } from "../socket";
 import Chat from "../components/chat";
@@ -31,55 +31,86 @@ export default function TablePage() {
     socket.emit("join-table", { tableId });
 
     const onStart = ({ table_state, player_state }) => {
-      // Merge shared + private into one object
-      const merged = {
-        ...table_state,
-        ...player_state,
-        // rename if you want:
-        yourSid: player_state.id,
-        yourSeat: player_state.seat,
-      };
+      const yourSeat = player_state?.seat;
+      const currentTurnSeat = table_state?.turn_index; // turn_index == seat (1..4)
+      const isMyTurn = currentTurnSeat === yourSeat;
 
-      // Build an ordered list of players by seat (works even if seat numbers aren't 0..3)
-      const players = Array.isArray(table_state.players) ? [...table_state.players] : [];
+      // Build ordered list (for relative seat mapping)
+      const players = Array.isArray(table_state?.players) ? [...table_state.players] : [];
       players.sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
 
-      // Find "me" inside the table_state list (by sid)
-      const myIndex = players.findIndex((p) => p.sid === player_state.id);
+      const myIndex = players.findIndex((p) => p.sid === player_state?.id);
 
-      // If we can't find ourselves, still set state and bail
-      if (myIndex === -1) {
-        merged.players = players;
-        setTableState(merged);
-        return;
-      }
+      const merged = {
+        ...table_state,
+        // keep original too
+        currentTurnSeat,
 
-      const n = players.length;
+        // private player fields
+        ...player_state,
+        yourSid: player_state?.id,
+        yourSeat,
 
-      // Relative positions (clockwise): you(bottom)=0, right=1, opposite=2, left=3
-      const rel = (offset) => players[(myIndex + offset + n) % n];
+        isMyTurn,
 
-      merged.seats = {
-        bottom: rel(0),
-        right: rel(1),
-        top: rel(2),
-        left: rel(3),
+        // normalized for your UI
+        yourHand: player_state?.tileHand ?? [],
+        pointHand: player_state?.pointHand ?? [],
+        revealedHand: player_state?.revealedHand ?? [],
+
+        players,
       };
 
-      // Also keep players sorted for general use
-      merged.players = players;
+      if (myIndex !== -1 && players.length > 0) {
+        const n = players.length;
+        const rel = (offset) => players[(myIndex + offset + n) % n];
 
-      // Your hand fields: normalize names for MahjongTable
-      merged.yourHand = player_state.tileHand ?? [];
-      merged.pointHand = player_state.pointHand ?? [];
-      merged.revealedHand = player_state.revealedHand ?? [];
+        merged.seats = {
+          bottom: rel(0),
+          right: rel(1),
+          top: rel(2),
+          left: rel(3),
+        };
+      }
 
       setTableState(merged);
     };
+
     const onUpdate = (patch) => {
-      // simplest version: backend sends full state as "patch"
-      // later you can implement real patching/immer
-      setTableState((prev) => ({ ...(prev ?? {}), ...patch }));
+      // backend may send partial updates; recompute isMyTurn safely
+      setTableState((prev) => {
+        const next = { ...(prev ?? {}), ...(patch ?? {}) };
+
+        // keep turn mapping consistent (turn_index == seat)
+        if ("turn_index" in (patch ?? {})) {
+          next.currentTurnSeat = patch.turn_index;
+        } else if (next.currentTurnSeat == null && next.turn_index != null) {
+          next.currentTurnSeat = next.turn_index;
+        }
+
+        const yourSeat = next.yourSeat ?? next.seat; // yourSeat is what we set on start
+        next.isMyTurn = next.currentTurnSeat === yourSeat;
+
+        // if players list updated, keep seats mapping correct
+        if (Array.isArray(next.players) && next.yourSid) {
+          const players = [...next.players].sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
+          next.players = players;
+
+          const myIndex = players.findIndex((p) => p.sid === next.yourSid);
+          if (myIndex !== -1 && players.length > 0) {
+            const n = players.length;
+            const rel = (offset) => players[(myIndex + offset + n) % n];
+            next.seats = {
+              bottom: rel(0),
+              right: rel(1),
+              top: rel(2),
+              left: rel(3),
+            };
+          }
+        }
+
+        return next;
+      });
     };
 
     socket.on("game-start", onStart);
@@ -92,12 +123,25 @@ export default function TablePage() {
     };
   }, [tableId]);
 
-  // send actions to backend
-  const actions = {
-    draw: () => socket.emit("game-action", { tableId, type: "draw" }),
-    discard: (tile) => socket.emit("game-action", { tableId, type: "discard", tile }),
-    call: (callType) => socket.emit("game-action", { tableId, type: "call", callType }),
-  };
+  // Gate emits on the frontend (backend should still enforce too)
+  const actions = useMemo(() => {
+    const canAct = !!tableState?.isMyTurn;
+
+    return {
+      draw: () => {
+        if (!canAct) return;
+        socket.emit("game-action", { tableId, type: "draw" });
+      },
+      discard: (tile) => {
+        if (!canAct) return;
+        socket.emit("game-action", { tableId, type: "discard", tile });
+      },
+      call: (callType) => {
+        if (!canAct) return;
+        socket.emit("game-action", { tableId, type: "call", callType });
+      },
+    };
+  }, [tableId, tableState?.isMyTurn]);
 
   return (
     <div className={`tablepage ${chatOpen ? "tablepage--chat-open" : ""}`}>
@@ -119,14 +163,13 @@ export default function TablePage() {
         <section className="tablepage__board">
           {!connected && <div className="board__card">Disconnected…</div>}
 
-          {connected && !tableState && (
-            <div className="board__card">Loading table…</div>
-          )}
+          {connected && !tableState && <div className="board__card">Loading table…</div>}
 
-          {tableState?.started
-            ? <MahjongTable state={tableState} actions={actions} />
-            : <div className="board__card">Waiting for players…</div>
-          }
+          {tableState?.started ? (
+            <MahjongTable state={tableState} actions={actions} />
+          ) : (
+            <div className="board__card">Waiting for players…</div>
+          )}
         </section>
 
         <aside className={`tablepage__chat ${chatOpen ? "" : "is-hidden"}`}>
