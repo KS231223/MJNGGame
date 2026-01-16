@@ -49,7 +49,16 @@ def on_join_table(data):
             player_state = table.players[player_sid].to_state()
             data = {"player_state": player_state, "table_state": table_state}
             emit("game-start", data, to=player_sid)
-    
+
+@socketio.on("game-action")
+def game_action(data):
+    table_id = data["tableId"]
+    sid = request.sid
+    if data["type"] == "draw":
+        table = tables.get(table_id)
+        possible_actions, tile = table.game.first_phase(sid)
+        emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)        
+
 @socketio.on("send-message")
 def on_send_message(data):
     table_id = data["tableId"]

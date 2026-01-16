@@ -42,7 +42,6 @@ export default function MahjongTable({ state, actions }) {
     isMyTurn, 
   } = state || {};
 
-  const canDiscard = !!isMyTurn;  
   return (
     <div className="mj">
       <div className="mj__center">
@@ -89,7 +88,7 @@ export default function MahjongTable({ state, actions }) {
                     key={t.uid}
                     tile={t}
                     onClick={(tile) => actions?.discard?.(tile)}
-                    disabled={!canDiscard}
+                    disabled={!state?.isMyTurn || !state?.drewThisTurn}
                   />
                 ))}
               </div>

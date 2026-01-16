@@ -1,5 +1,5 @@
 from deck import Deck
-import validator as Validator 
+from validator import Phase1Validator, Phase2Validator 
 import random
 
 class Game:
@@ -17,6 +17,8 @@ class Game:
         self.discardPile = []
         self.lastDiscardedTile = None
         self.drawn = []
+        self.validator_1 = Phase1Validator(self)
+        self.validator_2 = Phase2Validator(self)
 
     def add_player(self, player):
         self.players.append(player)
@@ -69,18 +71,28 @@ class Game:
         
         
 
-    def first_phase(self):
+    def first_phase(self, sid):
+
         if self.gameWon:
             return
-        drawnTile = self.deck.draw_tile
-        self.players[self.turn_index].add_tile(drawnTile)
-        self.discard_tile()
-        self.second_phase()
+        #check that the player calling this is correct turn
+
+        player = self.players[self.turn_index - 1]
+        if sid != player.sid:
+            return
+        drawnTile = self.deck.draw_tile()
+        player.add_tile(drawnTile)
+        possible_actions = self.validator_1.get_current_players_actions(player)
+        return possible_actions, drawnTile.to_dict()
+        #i return here first because i think let app.py send back and get back the new action, only when app.py receive the discard then we call second phase
+        # self.discard_tile()
+        # self.second_phase()
+
     def second_phase(self):
         if self.gameWon:
             return
 
-        validator = Validator.Phase2Validator(self)
+        validator = self.validator_2
         reactions = validator.get_all_players_reactions(self.lastDiscardedTile)
         #this is a dummy  listener obviously it doesnt work because this just appends every possible action and there is no listener
         #also need to implement kang, pong and chi

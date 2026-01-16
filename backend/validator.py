@@ -10,7 +10,7 @@ class Phase1Validator:
         actions_by_player = {}
         actions_by_player[player.sid] = []
         #do check for win or self-kang here
-        actions_by_player[player.sid].append("draw")
+        actions_by_player[player.sid].append("discard")
         return actions_by_player
 
 

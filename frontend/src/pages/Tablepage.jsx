@@ -1,5 +1,5 @@
 // src/pages/TablePage.jsx
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { socket } from "../socket";
 import Chat from "../components/chat";
@@ -12,18 +12,16 @@ export default function TablePage() {
   const [chatOpen, setChatOpen] = useState(true);
 
   const [tableState, setTableState] = useState(null);
-  const [connected, setConnected] = useState(socket.connected);
 
-  useEffect(() => {
-    const onConnect = () => setConnected(true);
-    const onDisconnect = () => setConnected(false);
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    };
-  }, []);
+  // draw-phase guard
+  const [drewThisTurn, setDrewThisTurn] = useState(false);
+  const drewRef = useRef(false);
+
+  // use this to detect turn changes
+  const lastTurnSeatRef = useRef(null);
+
+  // store whatever backend returns after draw
+  const [possibleActions, setPossibleActions] = useState([]);
 
   useEffect(() => {
     if (!tableId) return;
@@ -32,10 +30,9 @@ export default function TablePage() {
 
     const onStart = ({ table_state, player_state }) => {
       const yourSeat = player_state?.seat;
-      const currentTurnSeat = table_state?.turn_index; // turn_index == seat (1..4)
+      const currentTurnSeat = table_state?.turn_index; // seat number 1..4
       const isMyTurn = currentTurnSeat === yourSeat;
 
-      // Build ordered list (for relative seat mapping)
       const players = Array.isArray(table_state?.players) ? [...table_state.players] : [];
       players.sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
 
@@ -43,17 +40,14 @@ export default function TablePage() {
 
       const merged = {
         ...table_state,
-        // keep original too
         currentTurnSeat,
 
-        // private player fields
         ...player_state,
         yourSid: player_state?.id,
         yourSeat,
 
         isMyTurn,
 
-        // normalized for your UI
         yourHand: player_state?.tileHand ?? [],
         pointHand: player_state?.pointHand ?? [],
         revealedHand: player_state?.revealedHand ?? [],
@@ -64,34 +58,57 @@ export default function TablePage() {
       if (myIndex !== -1 && players.length > 0) {
         const n = players.length;
         const rel = (offset) => players[(myIndex + offset + n) % n];
+        merged.seats = { bottom: rel(0), right: rel(1), top: rel(2), left: rel(3) };
+      }
 
-        merged.seats = {
-          bottom: rel(0),
-          right: rel(1),
-          top: rel(2),
-          left: rel(3),
-        };
+      // reset draw guard when a new turn begins (including at start)
+      if (lastTurnSeatRef.current !== currentTurnSeat) {
+        lastTurnSeatRef.current = currentTurnSeat;
+        drewRef.current = false;
+        setDrewThisTurn(false);
+        setPossibleActions([]);
+      }
+
+      // AUTO-DRAW: only if it's your turn and you haven't drawn yet
+      if (isMyTurn && !drewRef.current) {
+        drewRef.current = true;
+        setDrewThisTurn(true);
+        socket.emit("game-action", { tableId, type: "draw" });
       }
 
       setTableState(merged);
     };
 
     const onUpdate = (patch) => {
-      // backend may send partial updates; recompute isMyTurn safely
       setTableState((prev) => {
         const next = { ...(prev ?? {}), ...(patch ?? {}) };
 
-        // keep turn mapping consistent (turn_index == seat)
+        // normalize turn seat
         if ("turn_index" in (patch ?? {})) {
           next.currentTurnSeat = patch.turn_index;
         } else if (next.currentTurnSeat == null && next.turn_index != null) {
           next.currentTurnSeat = next.turn_index;
         }
 
-        const yourSeat = next.yourSeat ?? next.seat; // yourSeat is what we set on start
+        const yourSeat = next.yourSeat ?? next.seat;
         next.isMyTurn = next.currentTurnSeat === yourSeat;
 
-        // if players list updated, keep seats mapping correct
+        // if turn changed, reset draw guard + possible actions
+        if (lastTurnSeatRef.current !== next.currentTurnSeat) {
+          lastTurnSeatRef.current = next.currentTurnSeat;
+          drewRef.current = false;
+          setDrewThisTurn(false);
+          setPossibleActions([]);
+        }
+
+        // AUTO-DRAW: only once per turn, only when it's your turn
+        if (next.isMyTurn && !drewRef.current) {
+          drewRef.current = true;
+          setDrewThisTurn(true);
+          socket.emit("game-action", { tableId, type: "draw" });
+        }
+
+        // keep seats mapping if players updated
         if (Array.isArray(next.players) && next.yourSid) {
           const players = [...next.players].sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
           next.players = players;
@@ -100,12 +117,7 @@ export default function TablePage() {
           if (myIndex !== -1 && players.length > 0) {
             const n = players.length;
             const rel = (offset) => players[(myIndex + offset + n) % n];
-            next.seats = {
-              bottom: rel(0),
-              right: rel(1),
-              top: rel(2),
-              left: rel(3),
-            };
+            next.seats = { bottom: rel(0), right: rel(1), top: rel(2), left: rel(3) };
           }
         }
 
@@ -113,31 +125,81 @@ export default function TablePage() {
       });
     };
 
+    const onPossibleActions = (payload) => {
+      const actions = Array.isArray(payload?.actions) ? payload.actions : [];
+      const tile = payload?.tile ?? null;
+
+      setPossibleActions(actions);
+
+      // add drawn tile into yourHand immediately (frontend optimistic)
+      if (tile) {
+        setTableState((prev) => {
+          if (!prev) return prev;
+          const hand = Array.isArray(prev.yourHand) ? prev.yourHand : [];
+
+          // avoid duplicates if you ever receive twice
+          const uid = tile.uid ?? `${tile.type}-${tile.suit}-${tile.number}-${Math.random()}`;
+          const already = hand.some((t) => (t?.uid ?? "") === uid);
+          const nextHand = already ? hand : [...hand, { ...tile, uid }];
+
+          return { ...prev, yourHand: nextHand };
+        });
+      }
+
+      // this is basically "you are now in discard/call phase"
+      // (we keep drewThisTurn=true; it was set when we emitted draw)
+    };
+
+
     socket.on("game-start", onStart);
     socket.on("table-update", onUpdate);
+    socket.on("possible-actions", onPossibleActions);
 
     return () => {
       socket.off("game-start", onStart);
       socket.off("table-update", onUpdate);
+      socket.off("possible-actions", onPossibleActions);
       socket.emit("leave-table", { tableId });
     };
   }, [tableId]);
 
-  // Gate emits on the frontend (backend should still enforce too)
+  // Gate emits (still let backend enforce real rules)
   const actions = useMemo(() => {
     const canAct = !!tableState?.isMyTurn;
 
     return {
+      // manual draw button (optional): only if it's your turn and you haven't drawn yet
       draw: () => {
         if (!canAct) return;
+        if (drewRef.current) return;
+        drewRef.current = true;
+        setDrewThisTurn(true);
         socket.emit("game-action", { tableId, type: "draw" });
       },
+
       discard: (tile) => {
+        const canAct = !!tableState?.isMyTurn;
         if (!canAct) return;
+        if (!drewRef.current) return;
+
         socket.emit("game-action", { tableId, type: "discard", tile });
+
+        // optimistic UI: remove from hand
+        setTableState((prev) => {
+          if (!prev) return prev;
+          const hand = Array.isArray(prev.yourHand) ? prev.yourHand : [];
+          return { ...prev, yourHand: hand.filter((t) => (t?.uid ?? "") !== (tile?.uid ?? "")) };
+        });
+
+        // clear possible actions after choosing
+        setPossibleActions([]);
+        // DON'T reset drewThisTurn here; let turn change reset it.
       },
+
+
       call: (callType) => {
         if (!canAct) return;
+        if (!drewRef.current) return;
         socket.emit("game-action", { tableId, type: "call", callType });
       },
     };
@@ -161,12 +223,17 @@ export default function TablePage() {
 
       <main className="tablepage__main">
         <section className="tablepage__board">
-          {!connected && <div className="board__card">Disconnected…</div>}
-
-          {connected && !tableState && <div className="board__card">Loading table…</div>}
+          {!tableState && <div className="board__card">Loading table…</div>}
 
           {tableState?.started ? (
-            <MahjongTable state={tableState} actions={actions} />
+            <MahjongTable
+              state={{
+                ...tableState,
+                drewThisTurn,
+                possibleActions,
+              }}
+              actions={actions}
+            />
           ) : (
             <div className="board__card">Waiting for players…</div>
           )}
