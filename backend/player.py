@@ -5,4 +5,6 @@ class Player:
         self.points = 0
         self.seat = 0
         self.hand = []
+        self.tileHand = []
+        self.pointHand = []
         self.name = None

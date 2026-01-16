@@ -42,6 +42,21 @@ class Deck:
     def draw_tile(self):
         tile = self.tiles.pop(random.randint(0, len(self.tiles)))
         return tile
+    def initialize_hands(self):
+        arrayOfHands = []
+        #for each array there should be a dictionary called points and hand and each have their own array
+        for i in range(0,3):
+            playerPoints = []
+            playerTiles = []    
+            while len(playerTiles) < 13:
+                currentTile = self.draw_tile();
+                if currentTile.type != "point":
+                    playerTiles.append(currentTile)
+                else:
+                    playerPoints.append(currentTile)
+            arrayOfHands.append([playerTiles,playerPoints])
+        return arrayOfHands
+
     
 if __name__ == "__main__":
     test = Deck()
