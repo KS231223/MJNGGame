@@ -16,6 +16,11 @@ class Game:
 
     def add_player(self, player):
         self.players.append(player)
+    
+    def remove_player(self, player_sid):
+        #doesnt work, this is list
+        #TODO fix this shit
+        self.players.pop(player_sid)
 
     def start_game(self):
         self.state = "in progress"

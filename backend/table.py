@@ -18,6 +18,7 @@ class Table:
     
     def remove_player(self, player_sid):
         self.players.pop(player_sid, None)
+        self.game.remove_player(player_sid, None)
     
     def start_game(self):
         self.game.start_game()

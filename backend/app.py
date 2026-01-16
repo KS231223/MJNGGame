@@ -36,13 +36,16 @@ def on_join_table(data):
          {"sender": "system", "message": message},
          to=table_id)
     
+    # start game if 4 ppl
     table = tables.get(table_id)
     if len(table.players) == 4:
         table.start_game()
         emit("chat-message",
              {"sender": "system", "message": "Start Game!"},
              to=table_id)
-        emit("table-state", table.to_state(for_sid=request.sid), to=table_id)
+        #need to decouple, make the frontend ALL send in a request for game-start
+        #or just... fuck it use the sid in the players list and send 4 emits
+        emit("table-state", table.game.state, to=table_id)
     
 @socketio.on("send-message")
 def on_send_message(data):
@@ -64,6 +67,7 @@ def on_leave_room(data):
     if len(table.players) < 1:
         tables.pop(table_id)
         print(f"table {table_id} deleted")
+
     emit("chat-message",
          {"sender": "system", "message": f"{request.sid} left {table_id}"},
          to=table_id)
