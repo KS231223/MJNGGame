@@ -32,8 +32,17 @@ function RevealedMelds({ melds = [] }) {
 }
 
 export default function MahjongTable({ state, actions }) {
-  const { seats, yourHand = [], currentTurnSeat, yourSeat, revealedHand = [], discards = [] } = state || {};
+  const {
+    seats,
+    yourHand = [],
+    revealedHand = [],
+    discards = [],
+    currentTurnSeat,
+    yourSeat,
+    isMyTurn, 
+  } = state || {};
 
+  const canDiscard = !!isMyTurn;  
   return (
     <div className="mj">
       <div className="mj__center">
@@ -79,8 +88,8 @@ export default function MahjongTable({ state, actions }) {
                   <Tile
                     key={t.uid}
                     tile={t}
-                    onClick={(tile) => actions?.discard?.(tile)} //ADD THE CLICKING LOGIC FROM THIS FUNC?
-                    disabled={currentTurnSeat !== yourSeat}
+                    onClick={(tile) => actions?.discard?.(tile)}
+                    disabled={!canDiscard}
                   />
                 ))}
               </div>

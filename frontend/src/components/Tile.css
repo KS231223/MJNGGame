@@ -47,3 +47,13 @@
 .tilebtn.tile-large .tileimg { height: 67px; }
 .tilebtn.tile-small .tileimg { height: 44px; }
 .tilebtn.tile-tiny  .tileimg { height: 34px; }
+
+.tilebtn.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  filter: grayscale(0.2);
+}
+
+.tilebtn.disabled:hover {
+  transform: none;
+}
