@@ -57,6 +57,7 @@ def game_action(data):
     table = tables.get(table_id)
 
     if data["type"] == "draw":
+        print("draw in app.py called!")
         possible_actions, tile = table.game.first_phase(sid)
         emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
 
@@ -131,7 +132,6 @@ def reaction_choice(data):
             possible_action = ["discard"]
             emit('possible-actions', {"actions": possible_action, "tile": None}, to=sid)
             print("discard sent!")
-
 
         return
 

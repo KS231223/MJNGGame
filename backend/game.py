@@ -157,7 +157,7 @@ class Game:
             tile_set.append(last_discarded_tile)
             tile_values = [tile_to_value(t) for t in tile_set]
             min_value = min(tile_values)
-            player.revealedKong.append(tile_set)
+            player.revealedKong.append(min_value)
             player.revealedHand.append(tile_set)
             for tile in tiles_to_use:
                 player.tileHand.remove(tile)
