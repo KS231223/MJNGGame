@@ -70,8 +70,22 @@ class Game:
         self.lastDiscardedTile = player.discard_tile(tile_id)
         self.discardPile.append(self.lastDiscardedTile)
         self.drawn.append(tile)
-        
-        
+
+    def draw_tile_specific(self, sid, tile):
+        #first get corresponding player
+        correctPlayer = None
+        for player in self.players:
+            if player.sid == sid:
+                correctPlayer = player
+                break
+        if correctPlayer:
+            correctPlayer.add_tile(tile)                
+        pass
+
+    def draw_tile(self, sid):
+        drawnTile = self.deck.draw_tile().to_dict()
+        self.draw_tile_specific(sid, drawnTile) 
+
 
     def first_phase(self, sid):
 
