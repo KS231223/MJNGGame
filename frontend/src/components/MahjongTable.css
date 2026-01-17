@@ -98,12 +98,12 @@
 
 .mj__seat--bottom {
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
 }
 
 .mj__seat--top {
-  top: 0;
+  top: -5%;
   left: 50%;
   transform: translateX(-50%) perspective(800px) rotateX(15deg);
 }
@@ -123,11 +123,87 @@
 /* Seat Component */
 .seat {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 12px;
   padding: 16px;
-  min-width: 300px;
+}
+
+/* Bottom seat - horizontal layout with public info on right */
+.mj__seat--bottom .seat {
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.mj__seat--bottom .seat__info {
+  order: 1;
+}
+
+.mj__seat--bottom .seat__hand-area,
+.mj__seat--bottom .seat > *:last-child {
+  order: 2;
+}
+
+.mj__seat--bottom .seat__public {
+  order: 3;
+  margin-left: 16px;
+}
+
+/* Top seat - horizontal layout with public info on left */
+.mj__seat--top .seat {
+  flex-direction: row;
+  justify-content: center;
+}
+
+.mj__seat--top .seat__public {
+  order: 1;
+  margin-right: 16px;
+}
+
+.mj__seat--top .seat__info {
+  order: 2;
+}
+
+.mj__seat--top .seat > *:last-child {
+  order: 3;
+}
+
+/* Left seat - vertical layout with public info below */
+.mj__seat--left .seat {
+  flex-direction: column;
+  align-items: center;
+}
+
+.mj__seat--left .seat__info {
+  order: 1;
+}
+
+.mj__seat--left .seat > *:not(.seat__info):not(.seat__public) {
+  order: 2;
+}
+
+.mj__seat--left .seat__public {
+  order: 3;
+  margin-top: 8px;
+}
+
+/* Right seat - vertical layout with public info below */
+.mj__seat--right .seat {
+  flex-direction: column;
+  align-items: center;
+}
+
+.mj__seat--right .seat__info {
+  order: 1;
+}
+
+.mj__seat--right .seat > *:not(.seat__info):not(.seat__public) {
+  order: 2;
+}
+
+.mj__seat--right .seat__public {
+  order: 3;
+  margin-top: 8px;
 }
 
 .seat__info {
@@ -199,62 +275,4 @@
   background: rgba(139, 111, 71, 0.2);
   border-radius: 4px;
   border: 1px solid rgba(139, 111, 71, 0.4);
-}
-
-/* Public revealed + point hand shown near each seat */
-.seat__public {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
-  max-width: 320px;
-}
-
-.revealed-public,
-.point-hand {
-  background: rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(139, 111, 71, 0.45);
-  border-radius: 6px;
-  padding: 6px;
-  width: 100%;
-}
-
-.revealed-public__label,
-.point-hand__label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffd700;
-  text-align: center;
-  margin-bottom: 4px;
-  opacity: 0.95;
-}
-
-.revealed-public__rows {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.revealed-public__set {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  background: rgba(139, 111, 71, 0.18);
-  border-radius: 4px;
-}
-
-.point-hand__tiles {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.point-hand__group {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  background: rgba(139, 111, 71, 0.18);
-  border-radius: 4px;
 }
