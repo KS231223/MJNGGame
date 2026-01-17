@@ -75,13 +75,13 @@ def chi_options(player, last_discarded_tile: Dict[str, Any]):
     chi1 = []
     chi2 = []
     chi3 = []
-    for i in range(len(allNumbersOfSameSuit)):
-        if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor - 2 in allNumbersOfSameSuit:
-            chi1.extend([numberToCheckFor - 1, numberToCheckFor - 2])
-        if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor + 1 in allNumbersOfSameSuit:
-            chi2.extend([numberToCheckFor - 1, numberToCheckFor + 1])
-        if numberToCheckFor + 1 in allNumbersOfSameSuit and numberToCheckFor + 2 in allNumbersOfSameSuit:
-            chi3.extend([numberToCheckFor + 1, numberToCheckFor + 2])
+    
+    if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor - 2 in allNumbersOfSameSuit:
+        chi1.extend([numberToCheckFor - 1, numberToCheckFor - 2])
+    if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor + 1 in allNumbersOfSameSuit:
+        chi2.extend([numberToCheckFor - 1, numberToCheckFor + 1])
+    if numberToCheckFor + 1 in allNumbersOfSameSuit and numberToCheckFor + 2 in allNumbersOfSameSuit:
+        chi3.extend([numberToCheckFor + 1, numberToCheckFor + 2])
     possibleChis = [ chi for chi in [chi1, chi2, chi3] if len(chi) == 2]
     finalChis = []
     for chi in possibleChis:
