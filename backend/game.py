@@ -142,7 +142,7 @@ class Game:
                 player.tileHand.remove(tile)
 
         elif action == "pong":
-            tile_set.append(tiles_to_use)
+            tile_set = tile_set + tiles_to_use
             tile_set.append(last_discarded_tile)
             tile_values = [tile_to_value(t) for t in tile_set]
             min_value = min(tile_values)
@@ -153,7 +153,7 @@ class Game:
             
 
         elif action == "kong":
-            tile_set.append(tiles_to_use)
+            tile_set = tile_set + tiles_to_use
             tile_set.append(last_discarded_tile)
             tile_values = [tile_to_value(t) for t in tile_set]
             min_value = min(tile_values)
