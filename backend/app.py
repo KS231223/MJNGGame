@@ -125,9 +125,10 @@ def reaction_choice(data):
             emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
         elif action in ["pong", "chi"]:
             possible_action = ["discard"]
-            emit('possible-actions', {"actions": possible_action, "tile": tile}, to=sid)
+            emit('possible-actions', {"actions": possible_action, "tile": None}, to=sid)
 
         ###### CHECK IF CAN DONT DO THIS... IF NOT WHAT NEEDS TO UPDATE?
+        ## PROB NEED ADD PLAYER STATES ALSO?
         socketio.emit("table-update", table.to_state(), room=table_id)
         return
 
@@ -160,8 +161,9 @@ def on_leave_room(data):
     leave_room(table_id)
     
     table = tables.get(table_id, None)
-    if table:
-        table.remove_player(request.sid)
+    if table is None:
+        return
+    table.remove_player(request.sid)
     if len(table.players) < 1:
         tables.pop(table_id)
         print(f"table {table_id} deleted")

@@ -119,6 +119,8 @@ class Game:
         print()
         print(action)
         player = [p for p in self.players if p.sid == sid]
+        player = player[0]
+        #abv is hacky af but i cant be arsed
         tile_set = []
 
         if action == "chi":
