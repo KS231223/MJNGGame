@@ -200,3 +200,61 @@
   border-radius: 4px;
   border: 1px solid rgba(139, 111, 71, 0.4);
 }
+
+/* Public revealed + point hand shown near each seat */
+.seat__public {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  max-width: 320px;
+}
+
+.revealed-public,
+.point-hand {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(139, 111, 71, 0.45);
+  border-radius: 6px;
+  padding: 6px;
+  width: 100%;
+}
+
+.revealed-public__label,
+.point-hand__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 4px;
+  opacity: 0.95;
+}
+
+.revealed-public__rows {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.revealed-public__set {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(139, 111, 71, 0.18);
+  border-radius: 4px;
+}
+
+.point-hand__tiles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.point-hand__group {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(139, 111, 71, 0.18);
+  border-radius: 4px;
+}
