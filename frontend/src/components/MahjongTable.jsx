@@ -67,6 +67,12 @@ export default function MahjongTable({ state, actions }) {
     reactionOptions,
   } = state || {};
 
+  const canDiscard =
+  !!state?.isMyTurn &&
+  !state?.discarded &&
+  (state?.possibleActions ?? []).includes("discard");
+
+
   const sortedHand = [...yourHand].sort(sortTiles); // <- ADD THIS
 
   return (
@@ -128,11 +134,7 @@ export default function MahjongTable({ state, actions }) {
                       key={t.uid}
                       tile={t}
                       onClick={(tile) => actions?.discard?.(tile)}
-                      disabled={
-                        !state?.isMyTurn ||
-                        !state?.drewThisTurn ||
-                        state?.discarded
-                      }
+                      disabled={!canDiscard}
                     />
                   ),
                 )}

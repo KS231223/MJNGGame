@@ -11,10 +11,17 @@ class Phase1Validator:
     def __init__(self, game):
         self.game = game
 
-    def get_current_players_actions(self,player):
+    def get_current_players_actions(self,player, tile:dict):
         actions_by_player = {}
         actions_by_player[player.sid] = []
         #do check for win or self-kang here
+        tiles_same = [t for t in player.tileHand if same_tile(t, tile)]
+        count = len(tiles_same)
+
+        if count == 3:
+            actions_by_player.append(( "kong", tiles_same[:3], tile))
+
+        #TODO ADD CHECK FOR WIN CONDITION 
         actions_by_player[player.sid].append("discard")
         return actions_by_player
 
@@ -45,7 +52,7 @@ class Phase2Validator:
                 chi.append((player.sid, tiles, last_discarded_tile, "chi")) 
 
             if False:
-                #this is just a placeholder until I get the win conditional
+                #TODO ADD CHECK FOR WIN CONDITION
                 win.append(player.sid, winning_tile_sequence, "win")     
 
         return win, pong_or_kong, chi

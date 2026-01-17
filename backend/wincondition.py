@@ -11,18 +11,20 @@ class WinCondition:
     def __init__(self):
         self.memo = {}  # Memoization dictionary
     
-    def tile_to_value(self, tile: Tile) -> int:
+    def tile_to_value(self, tile: dict) -> int:
         """Convert a Tile object to its value index (0-34)"""
-        if tile.suit == "ball":
-            return tile.number - 1  # 0-8
-        elif tile.suit == "stick":
-            return tile.number - 1 + 9  # 9-17
-        elif tile.suit == "wan":
-            return tile.number - 1 + 18  # 18-26
-        elif tile.suit == "wind":
-            return tile.number - 1 + 27  # 27-30
-        elif tile.suit == "big":
-            return tile.number - 1 + 31  # 31-34
+        suit = tile.get("suit")
+        number = tile.get("number")
+        if suit == "ball":
+            return number - 1  # 0-8
+        elif suit == "stick":
+            return number - 1 + 9  # 9-17
+        elif suit == "wan":
+            return number - 1 + 18  # 18-26
+        elif suit == "wind":
+            return number - 1 + 27  # 27-30
+        elif suit == "big":
+            return number - 1 + 31  # 31-34
         else:
             return -1  # Flowers/animals not counted in hand
     

@@ -89,6 +89,8 @@ def game_action(data):
             send_action(table, "chi", chi)
         else:
             table.game.pending = None
+            table.game.turn_index = (table.game.turn_index % 4) + 1
+            emit_full_state(table)
 
 @socketio.on("reaction-choice")
 def reaction_choice(data):
@@ -118,6 +120,8 @@ def reaction_choice(data):
         table.game.apply_reaction(sid, tiles_to_use, last_discarded_tile, action)
 
         table.game.pending = None
+
+        emit_full_state(table)
         
         #if kong return back to phase one for the player who kong
         if action == "kong":
@@ -126,10 +130,9 @@ def reaction_choice(data):
         elif action in ["pong", "chi"]:
             possible_action = ["discard"]
             emit('possible-actions', {"actions": possible_action, "tile": None}, to=sid)
+            print("discard sent!")
 
-        ###### CHECK IF CAN DONT DO THIS... IF NOT WHAT NEEDS TO UPDATE?
-        ## PROB NEED ADD PLAYER STATES ALSO?
-        socketio.emit("table-update", table.to_state(), room=table_id)
+
         return
 
     # everyone responded and all passed -> next tier
@@ -141,6 +144,7 @@ def reaction_choice(data):
             send_action(table, "chi", pending["chi"])
         else:
             table.game.pending = None
+            emit_full_state(table)
             # continue game
 
 
@@ -213,6 +217,18 @@ def send_action(table, tier, entries):
             "reaction-options",
             message,
             to=sid,
+        )
+
+
+def emit_full_state(table):
+    table_state = table.to_state()  # MUST be public only (no tileHand for other players)
+
+    for sid in table.players.keys():
+        player_state = table.players[sid].to_state()  # includes tileHand for THIS player only
+        socketio.emit(
+            "table-update",
+            {"table_state": table_state, "player_state": player_state},
+            to=sid
         )
 
 if __name__ == "__main__":

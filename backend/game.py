@@ -104,7 +104,7 @@ class Game:
         
         player.add_tile(drawnTile)
 
-        possible_actions = self.validator_1.get_current_players_actions(player)
+        possible_actions = self.validator_1.get_current_players_actions(player, drawnTile)
         return possible_actions, drawnTile
 
 
