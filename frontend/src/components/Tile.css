@@ -23,7 +23,7 @@
 }
 
 .tileimg {
-  height: 56px;
+  height: 48px;
   width: auto;
   display: block;
   user-select: none;
@@ -44,9 +44,9 @@
 }
 
 /* size variants */
-.tilebtn.tile-large .tileimg { height: 67px; }
-.tilebtn.tile-small .tileimg { height: 44px; }
-.tilebtn.tile-tiny  .tileimg { height: 34px; }
+.tilebtn.tile-large .tileimg { height: 58px; }
+.tilebtn.tile-small .tileimg { height: 36px; }
+.tilebtn.tile-tiny  .tileimg { height: 28px; }
 
 .tilebtn.disabled {
   cursor: not-allowed;

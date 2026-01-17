@@ -24,34 +24,31 @@ class Phase2Validator:
         self.game = game
 
     def get_all_players_reactions(self, last_discarded_tile):
-
-        priority = {"win": 4, "kong": 3, "pong": 2, "chi": 1}
-        reactions = {}
+        
+        win = []
+        pong_or_kong = []
+        chi = []
 
         for player in self.game.players:
             if self.game.turn_index == player.seat:
                 continue
-            actions = []
 
             tiles_same = [t for t in player.tileHand if same_tile(t, last_discarded_tile)]
             count = len(tiles_same)
             if count >= 2:
-                    actions.append(("pong", tiles_same[:2]))  # payload can be 2 tiles (or all matches)
+                pong_or_kong.append((player.sid, tiles_same[:2], "pong"))  
             if count >= 3:
-                actions.append(("kong", tiles_same[:3]))
+                pong_or_kong.append((player.sid, tiles_same[:3], "kong"))
                 
 
             for tiles in chi_options(player, last_discarded_tile):
-                actions.append(("chi", tiles)) 
+                chi.append((player.sid, tiles, "chi")) 
 
             if False:
                 #this is just a placeholder until I get the win conditional
-                actions.append("win", None)
-                
-            actions.sort(key=lambda ap: priority.get(ap[0], 0), reverse=True)
-            reactions[player.sid] = actions               
-            
-        return reactions
+                win.append(player.sid, winning_tile_sequence, "win")     
+
+        return win, pong_or_kong, chi
 
 
 #helper func

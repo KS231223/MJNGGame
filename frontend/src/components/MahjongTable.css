@@ -10,14 +10,14 @@
     inset 0 0 50px rgba(0,0,0,0.3),
     0 10px 30px rgba(0,0,0,0.5);
   position: relative;
-  padding: 20px;
+  padding: 12px;
   overflow: hidden;
   min-height: 0;
 
   display: grid;
-  grid-template-columns: 220px 1fr 220px;
-  grid-template-rows: auto 1fr auto;
-  gap: 12px;
+  grid-template-columns: 240px 1fr 240px;
+  grid-template-rows: 100px 1fr 180px;
+  gap: 8px;
   box-sizing: border-box;
 }
 
@@ -77,12 +77,12 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 14px;
-  padding: 12px;
+  padding: 8px;
   color: #fff;
 
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   overflow: hidden;
 }
 
@@ -126,24 +126,26 @@
 /* Hand area with melds */
 .seat__hand-area {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-end;
-  padding-top: 8px;
+  padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.10);
+  overflow: hidden;
 }
 
 .seat__hand {
   display: flex;
   flex-wrap: nowrap;
   align-items: flex-end;
-  gap: 0;               /* remove gaps */
+  gap: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 /* overlap tiles a bit */
 .seat__hand .tilebtn + .tilebtn {
-  margin-left: -10px;   /* tweak: -6 to -14 */
+  margin-left: -8px;
 }
-
 
 .revealed-melds {
   display: flex;
@@ -162,13 +164,13 @@
 .seat__hand {
   display: flex;
   flex-wrap: nowrap;
-  gap: 2px;
+  gap: 0;
   align-items: flex-end;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 8px;
+  padding: 4px;
   background: rgba(139, 69, 19, 0.3);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .seat__hand::-webkit-scrollbar {
@@ -178,20 +180,74 @@
 /* Make top/left/right seats look tighter */
 .mj__seat--top .seat {
   align-items: center;
+  padding: 6px;
 }
 
 .mj__seat--left .seat,
 .mj__seat--right .seat {
-  padding: 10px;
+  padding: 4px;
+  justify-content: center;
+}
+
+.mj__seat--left,
+.mj__seat--right{
+  align-self: stretch;
 }
 .mj__seat--bottom .seat {
-  padding: 10px 12px;
+  padding: 8px;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
   .mj {
-    grid-template-columns: 160px 1fr 160px;
-    grid-template-rows: 120px 1fr 210px;
+    grid-template-columns: 100px 1fr 100px;
+    grid-template-rows: 90px 1fr 160px;
   }
+}
+
+.center-discards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 350px;
+  margin: auto;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.center-discards__pile {
+  position: absolute;
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+}
+
+.center-discards__pile--top {
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: row;
+}
+
+.center-discards__pile--bottom {
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: row;
+}
+
+.center-discards__pile--left {
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+.center-discards__pile--right {
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
 }

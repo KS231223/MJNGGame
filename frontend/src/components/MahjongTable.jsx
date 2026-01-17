@@ -3,17 +3,30 @@ import "./MahjongTable.css";
 import HiddenHand from "./HiddenHand";
 import Tile from "./Tile";
 
-function DiscardPile({ discards = [] }) {
+function CenterDiscards({ piles }) {
+  const p = piles ?? { bottom: [], right: [], top: [], left: [] };
+
   return (
-    <div className="discard-pile">
-      {discards.map((tile, i) => (
-        <div key={i} className="discard-tile">
-          <Tile tile={tile} disabled={true} size="small" />
-        </div>
-      ))}
+    <div className="center-discards">
+      <div className="center-discards__pile center-discards__pile--top">
+        {p.top.slice(-6).map((t, i) => <Tile key={i} tile={t} disabled size="tiny" />)}
+      </div>
+
+      <div className="center-discards__pile center-discards__pile--left">
+        {p.left.slice(-6).map((t, i) => <Tile key={i} tile={t} disabled size="tiny" />)}
+      </div>
+
+      <div className="center-discards__pile center-discards__pile--right">
+        {p.right.slice(-6).map((t, i) => <Tile key={i} tile={t} disabled size="tiny" />)}
+      </div>
+
+      <div className="center-discards__pile center-discards__pile--bottom">
+        {p.bottom.slice(-6).map((t, i) => <Tile key={i} tile={t} disabled size="tiny" />)}
+      </div>
     </div>
   );
 }
+
 
 function RevealedMelds({ melds = [] }) {
   if (!melds || melds.length === 0) return null;
@@ -39,6 +52,7 @@ export default function MahjongTable({ state, actions }) {
     discards = [],
     currentTurnSeat,
     yourSeat,
+    centerDiscards,
     isMyTurn, 
   } = state || {};
 
@@ -49,8 +63,8 @@ export default function MahjongTable({ state, actions }) {
           Turn: Seat {currentTurnSeat ?? "?"}{" "}
           {currentTurnSeat === yourSeat ? "(you)" : ""}
         </div>
-        <DiscardPile discards={discards} />
-      </div>
+        <CenterDiscards piles={centerDiscards} />
+        </div>
 
       <div className="mj__seat mj__seat--top">
         <SeatView

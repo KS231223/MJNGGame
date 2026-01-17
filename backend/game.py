@@ -17,6 +17,7 @@ class Game:
         self.discardPile = []
         self.lastDiscardedTile = None
         self.drawn = []
+        self.pending_reaction = None
         self.validator_1 = Phase1Validator(self)
         self.validator_2 = Phase2Validator(self)
 
@@ -39,7 +40,7 @@ class Game:
 
                 else:
                     playerPoints.append(currentTile.to_dict())
-                self.drawn.append(currentTile)
+                self.drawn.append(currentTile.to_dict())
             arrayOfHands.append({"tiles":playerTiles,
                                  "points":playerPoints})
         return arrayOfHands
@@ -60,15 +61,15 @@ class Game:
             player.tileHand = currentHand.get("tiles")
             player.pointHand = currentHand.get("points")
 
-
         #return player order for frontend to switch the seats
         #also return the starting hand
+
     def discard_tile(self, sid, tile):
-        # HAVE TO PUT THE SOCKET HERE TO DISCARD TILE WHICH EMITS TO THE APP.PY TO ASK WHICH TILE TO DISCARD AND RETURNS THE TILE
         tile_id = tile.get("uid")
         player = self.players[self.turn_index - 1]
         self.lastDiscardedTile = player.discard_tile(tile_id)
         self.discardPile.append(self.lastDiscardedTile)
+        self.drawn.append(tile)
         
         
 
@@ -82,7 +83,7 @@ class Game:
         if sid != player.sid:
             return
         drawnTile = self.deck.draw_tile()
-        player.add_tile(drawnTile)
+        player.add_tile(drawnTile.to_dict())
         possible_actions = self.validator_1.get_current_players_actions(player)
         return possible_actions, drawnTile.to_dict()
         #i return here first because i think let app.py send back and get back the new action, only when app.py receive the discard then we call second phase
@@ -95,8 +96,10 @@ class Game:
 
         validator = self.validator_2
         reactions = validator.get_all_players_reactions(self.lastDiscardedTile)
-        sid_order = order_reaction_sids(reactions)
-        return reactions, sid_order
+        return reactions
+    
+    def apply_reaction(self, sid, choice, pending):
+        pass
 
 
 
@@ -137,30 +140,3 @@ Schema for hands from initialize_hands
 {"tiles":playerTiles,
 "points":playerPoints}
 """
-
-#hlper func
-PRIORITY = {"win": 4, "kong": 3, "pong": 2, "chi": 1}
-def order_reaction_sids(reactions: dict, priority: dict = PRIORITY):
-    """
-    reactions: dict[sid] -> list[(action:str, payload:any)]
-    Returns: list[sid] sorted by each sid's BEST action priority (desc).
-    Players with no actions are excluded.
-    """
-    ranked = []
-
-    for sid, actions in reactions.items():
-        if not actions:
-            continue
-
-        # ensure per-player actions are sorted best-first
-        actions_sorted = sorted(actions, key=lambda ap: priority.get(ap[0], 0), reverse=True)
-
-        best_action = actions_sorted[0][0]
-        best_prio = priority.get(best_action, 0)
-
-        ranked.append((best_prio, sid))
-
-    # sort by priority desc
-    ranked.sort(key=lambda x: x[0], reverse=True)
-
-    return [sid for _, sid in ranked]

@@ -52,6 +52,8 @@ export default function TablePage() {
         pointHand: player_state?.pointHand ?? [],
         revealedHand: player_state?.revealedHand ?? [],
 
+        centerDiscards: { bottom: [], right: [], top: [], left: [] },
+
         players,
       };
 
@@ -120,7 +122,6 @@ export default function TablePage() {
             next.seats = { bottom: rel(0), right: rel(1), top: rel(2), left: rel(3) };
           }
         }
-
         return next;
       });
     };
@@ -150,15 +151,65 @@ export default function TablePage() {
       // (we keep drewThisTurn=true; it was set when we emitted draw)
     };
 
+    const onDiscardTile = ({ tile, sid: discarderSid }) => {
+      setTableState((prev) => {
+        if (!prev) return prev;
+
+        const players = Array.isArray(prev.players) ? prev.players : [];
+        const mySid = prev.yourSid;
+
+        const myIndex = players.findIndex((p) => p.sid === mySid);
+        const discarderIndex = players.findIndex((p) => p.sid === discarderSid);
+
+        // fallback: if we can't map, just dump to center bottom
+        if (myIndex === -1 || discarderIndex === -1 || players.length === 0) {
+          const cd = prev.centerDiscards ?? { bottom: [], right: [], top: [], left: [] };
+          return {
+            ...prev,
+            centerDiscards: { ...cd, bottom: [...cd.bottom, tile] },
+          };
+        }
+
+        const n = players.length;
+        // relative offset from me (clockwise): 0=me(bottom), 1=right, 2=top, 3=left
+        const offset = (discarderIndex - myIndex + n) % n;
+
+        const key =
+          offset === 0 ? "bottom" :
+          offset === 1 ? "right" :
+          offset === 2 ? "top" :
+          "left";
+
+        const cd = prev.centerDiscards ?? { bottom: [], right: [], top: [], left: [] };
+
+        return {
+          ...prev,
+          centerDiscards: {
+            ...cd,
+            [key]: [...cd[key], tile],
+          },
+        };
+      });
+
+      // only clear YOUR draw/possible-actions if YOU discarded
+      if (discarderSid && discarderSid === tableState?.yourSid) {
+        setPossibleActions([]);
+        setDrewThisTurn(false);
+        drewRef.current = false;
+      }
+    };
+
 
     socket.on("game-start", onStart);
     socket.on("table-update", onUpdate);
     socket.on("possible-actions", onPossibleActions);
+    socket.on("discard-tile", onDiscardTile);
 
     return () => {
       socket.off("game-start", onStart);
       socket.off("table-update", onUpdate);
       socket.off("possible-actions", onPossibleActions);
+      socket.off("discard-tile", onDiscardTile);
       socket.emit("leave-table", { tableId });
     };
   }, [tableId]);
