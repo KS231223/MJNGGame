@@ -96,33 +96,51 @@ def reaction_choice(data):
     sid = request.sid
     table = tables.get(table_id)
 
-    if not table or not getattr(table, "pending", None):
+    if not table or not getattr(table.game, "pending", None):
         return
 
     pending = table.game.pending
     if sid not in pending["eligible"]:
         return
 
-    choice = data.get("choice")  # {"type":"pass"} OR {"type":"pong","payload":...}
+    choice = data.get("choice") or {}
     pending["responses"][sid] = choice
 
     # if someone takes action, resolve immediately
-    if choice and choice.get("type") != "pass":
-        table.game.apply_reaction(sid, choice, pending["tile"])
+    if choice.get("type") != "pass":
+        action = choice.get("type")  # "pong"|"kong"|"chi"|"win"
+        tiles_to_use = choice.get("tiles_to_use", [])  # list of tile dicts
+
+        # trust backend pending tile as the true last discard
+        last_discarded_tile = pending["tile"]
+
+        # call your new signature
+        table.game.apply_reaction(sid, tiles_to_use, last_discarded_tile, action)
+
         table.game.pending = None
+        
+        #if kong return back to phase one for the player who kong
+        if action == "kong":
+            possible_actions, tile = table.game.first_phase(sid)
+            emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
+        elif action in ["pong", "chi"]:
+            possible_action = ["discard"]
+            emit('possible-actions', {"actions": possible_action, "tile": tile}, to=sid)
+
+        ###### CHECK IF CAN DONT DO THIS... IF NOT WHAT NEEDS TO UPDATE?
         socketio.emit("table-update", table.to_state(), room=table_id)
         return
 
-    # if everyone eligible has responded and all passed -> next tier
+    # everyone responded and all passed -> next tier
     if all(s in pending["responses"] for s in pending["eligible"]):
         tier = pending["tier"]
-        if tier == "win" and pending["pong_or_kong"]:
+        if tier == "win" and pending.get("pong_or_kong"):
             send_action(table, "pong_or_kong", pending["pong_or_kong"])
-        elif tier in ("win", "pong_or_kong") and pending["chi"]:
+        elif tier in ("win", "pong_or_kong") and pending.get("chi"):
             send_action(table, "chi", pending["chi"])
         else:
             table.game.pending = None
-            # no reactions taken -> continue game
+            # continue game
 
 
   
@@ -142,7 +160,8 @@ def on_leave_room(data):
     leave_room(table_id)
     
     table = tables.get(table_id, None)
-    table.remove_player(request.sid)
+    if table:
+        table.remove_player(request.sid)
     if len(table.players) < 1:
         tables.pop(table_id)
         print(f"table {table_id} deleted")

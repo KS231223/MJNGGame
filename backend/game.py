@@ -77,7 +77,6 @@ class Game:
 
         if self.gameWon:
             return
-        #check that the player calling this is correct turn
 
         player = self.players[self.turn_index - 1]
         if sid != player.sid:
@@ -96,8 +95,46 @@ class Game:
         reactions = validator.get_all_players_reactions(self.lastDiscardedTile)
         return reactions
     
-    def apply_reaction(self, sid, choice, pending):
-        pass
+    def apply_reaction(self, sid, tiles_to_use, last_discarded_tile, action):
+        print("action applied!")
+        print(sid)
+        print()
+        print(tiles_to_use)
+        print()
+        print(last_discarded_tile)
+        print()
+        print(action)
+        player = [p for p in self.players if p.sid == sid]
+        tile_set = []
+
+        if action == "chi":
+            tile_set.append(tiles_to_use)
+            tile_set.append(last_discarded_tile)
+            tile_set.sort(key=lambda t: t.get("number"))
+            player.revealedChi.append(tile_set)
+            player.revealedHand.append(tile_set)
+            for tile in tiles_to_use:
+                player.tileHand.remove(tile)
+
+        elif action == "pong":
+            tile_set.append(tiles_to_use)
+            tile_set.append(last_discarded_tile)
+            player.revealedPong.append(tile_set)
+            player.revealedHand.append(tile_set)
+            for tile in tiles_to_use:
+                player.tileHand.remove(tile)  
+            
+
+        elif action == "kong":
+            tile_set.append(tiles_to_use)
+            tile_set.append(last_discarded_tile)
+            player.revealedKong.append(tile_set)
+            player.revealedHand.append(tile_set)
+            for tile in tiles_to_use:
+                player.tileHand.remove(tile)
+        
+        self.turn_index = player.seat
+            
 
         
 """

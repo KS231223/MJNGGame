@@ -11,6 +11,8 @@ export default function TablePage() {
   const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(true);
 
+  const [reactionOptions, setReactionOptions] = useState(null); 
+
   const [tableState, setTableState] = useState(null);
 
   const [discarded, setDiscarded] = useState(false);
@@ -175,8 +177,6 @@ export default function TablePage() {
         const players = Array.isArray(prev.players) ? prev.players : [];
         const mySid = prev.yourSid;
 
-        discardedRef.current = true;
-        setDiscarded(true);
 
         const myIndex = players.findIndex((p) => p.sid === mySid);
         const discarderIndex = players.findIndex((p) => p.sid === discarderSid);
@@ -218,18 +218,31 @@ export default function TablePage() {
         drewRef.current = false;
       }
     };
+    const onReactionOptions = (payload) => {
+      // payload: { tier, options }
+      const tier = payload?.tier ?? null;
+      const options = Array.isArray(payload?.options) ? payload.options : [];
+
+      if (!tier || options.length === 0) {
+        setReactionOptions(null);
+        return;
+      }
+      setReactionOptions({ tier, options });
+    };
 
 
     socket.on("game-start", onStart);
     socket.on("table-update", onUpdate);
     socket.on("possible-actions", onPossibleActions);
     socket.on("discard-tile", onDiscardTile);
+    socket.on("reaction-options", onReactionOptions);
 
     return () => {
       socket.off("game-start", onStart);
       socket.off("table-update", onUpdate);
       socket.off("possible-actions", onPossibleActions);
       socket.off("discard-tile", onDiscardTile);
+      socket.off("reaction-options", onReactionOptions);
       socket.emit("leave-table", { tableId });
     };
   }, [tableId]);
@@ -273,8 +286,33 @@ export default function TablePage() {
         if (!drewRef.current) return;
         socket.emit("game-action", { tableId, type: "call", callType });
       },
+      react: (opt) => {
+        if (!opt) return;
+
+        socket.emit("reaction-choice", {
+          tableId,
+          choice: {
+            type: opt.action,                 // "pong"|"kong"|"chi"|"win"
+            tiles_to_use: opt.using ?? [],    // list of tiles from hand
+            // backend should ignore this and use pending["tile"] as truth, but ok to send:
+            last_discarded_tile: opt.take ?? null,
+          },
+        });
+
+        setReactionOptions(null);
+      },
+
+      passReaction: () => {
+        socket.emit("reaction-choice", {
+          tableId,
+          choice: { type: "pass" },
+        });
+
+        setReactionOptions(null);
+      },
+
     };
-  }, [tableId, tableState?.isMyTurn]);
+  },  [tableId, tableState?.isMyTurn, reactionOptions?.tier]);
 
   return (
     <div className={`tablepage ${chatOpen ? "tablepage--chat-open" : ""}`}>
@@ -302,6 +340,8 @@ export default function TablePage() {
                 ...tableState,
                 drewThisTurn,
                 possibleActions,
+                discarded,
+                reactionOptions,
               }}
               actions={actions}
             />

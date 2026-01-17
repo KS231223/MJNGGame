@@ -1,0 +1,70 @@
+.reaction-tray {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 60;
+
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 10px;
+  backdrop-filter: blur(6px);
+
+  max-width: min(920px, 95%);
+}
+
+.reaction-tray__title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 8px;
+  opacity: 0.95;
+}
+
+.reaction-tray__buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.reaction-tray__btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(255,255,255,0.10);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.reaction-tray__btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.14);
+}
+
+.reaction-tray__btn-title {
+  font-weight: 900;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.reaction-tray__tiles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reaction-tray__arrow {
+  color: rgba(255,255,255,0.75);
+  font-weight: 900;
+}
+
+.reaction-tray__btn--pass {
+  background: rgba(255, 80, 80, 0.35);
+}
+
+.reaction-tray__btn--pass:hover {
+  background: rgba(255, 80, 80, 0.45);
+}

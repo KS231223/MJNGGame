@@ -2,6 +2,8 @@
 import "./MahjongTable.css";
 import HiddenHand from "./HiddenHand";
 import Tile from "./Tile";
+import ReactionTray from "./ReactionTray";
+
 
 function CenterDiscards({ piles }) {
   const p = piles ?? { bottom: [], right: [], top: [], left: [] };
@@ -55,10 +57,16 @@ export default function MahjongTable({ state, actions }) {
     centerDiscards,
     isMyTurn,
     discarded, 
+    reactionOptions,
   } = state || {};
 
   return (
     <div className="mj">
+      <ReactionTray
+        reactionOptions={reactionOptions}
+        onPick={(opt) => actions?.react?.(opt)}
+        onPass={() => actions?.passReaction?.()}
+      />
       <div className="mj__center">
         <div className="mj__status">
           Turn: Seat {currentTurnSeat ?? "?"}{" "}

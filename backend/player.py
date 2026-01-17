@@ -5,6 +5,9 @@ class Player:
         self.points = 0
         self.seat = 0
         self.revealedHand = []
+        self.revealedChi = []
+        self.revealedPong = []
+        self.revealedKang = []
         self.tileHand = []
         self.pointHand = []
         self.name = sid
