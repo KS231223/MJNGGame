@@ -131,7 +131,7 @@ class Game:
         tile_set = []
 
         if action == "chi":
-            tile_set.append(tiles_to_use)
+            tile_set = tile_set + tiles_to_use 
             tile_set.append(last_discarded_tile)
             tile_set.sort(key=lambda t: t.get("number"))
             player.revealedChi.append(tile_set)
