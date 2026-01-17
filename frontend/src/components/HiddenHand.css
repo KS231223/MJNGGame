@@ -2,35 +2,60 @@
   display: flex;
   align-items: center;
   gap: 0;
+  position: relative; /* allow absolute z-ordering if needed */
 }
 
+/* Back-hand (horizontal stack) */
 .hand--back {
   flex-direction: row;
   justify-content: center;
 }
 
-.hand--side {
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Hidden-hand tiles only */
-.handtile {
+.hand--back .handtile {
   height: 18px;
   width: auto;
   display: block;
   user-select: none;
   pointer-events: none;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
   position: relative;
+  z-index: 0;
+  /* subtle shadow to show depth */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
-/* back stack overlap */
-.hand--back .handtile + .handtile {
-  margin-left: -5px;
+/* overlay tiles properly, later tiles on top */
+.hand--back .handtile:nth-child(n) {
+  margin-left: -4px; /* overlap more */
+  z-index: var(--tile-z, 0);
+}
+.hand--back .handtile:nth-child(n) {
+  z-index: calc(var(--i) + 1); /* optional if generating dynamically */
 }
 
-/* side stack overlap (make it REAL overlap) */
+/* Side-hand (vertical stack) */
+.hand--side {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hand--side .handtile {
+  height: 18px;
+  width: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  position: relative;
+  /* subtle shadow to prevent domino effect */
+  box-shadow: 1px 0 2px rgba(0,0,0,0.35);
+}
+
+/* overlap back-to-back tiles vertically */
 .hand--side .handtile + .handtile {
-  margin-top: -8px;
+  margin-top: -4px; /* stronger overlap to hide white */
+  z-index: 0;
+}
+
+/* optional: make last tile on top */
+.hand--side .handtile:last-child {
+  z-index: 10;
 }

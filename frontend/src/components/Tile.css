@@ -11,7 +11,7 @@
   line-height: 0;
 }
 
-.tilebtn:not(.disabled):hover { transform: translateY(-8px); z-index: 10; }
+.tilebtn:not(.disabled):hover { transform:translate(-3px,-3px); }
 .tilebtn:not(.disabled):active { transform: translateY(-4px); }
 
 .tilebtn.disabled { cursor: not-allowed; opacity: 0.9; }
@@ -39,7 +39,7 @@
   height: 100%;
   width: 100%;
   object-fit: contain;
-  transform: scale(0.86) translate(-2px, 2px);
+  transform: scale(0.86) translate(-4px, 4px);
   transform-origin: center;
 }
 

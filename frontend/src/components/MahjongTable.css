@@ -74,34 +74,64 @@
   width: 100%;
   min-height: 0;
 
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 14px;
-  padding: 8px;
-  color: #fff;
-
   display: flex;
   flex-direction: column;
-  gap: 6px;
   overflow: hidden;
+
+  border-radius: 14px;
+  background-color: rgba(20, 20, 20, 0.35);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.4);
 }
 
 .seat__info {
+  flex: 0 0 18%;
+  min-height: 36px;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 4px 10px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 6px;
+  justify-content: space-between;
+  padding: 6px 12px;
+
+  background: transparent; /* remove previous gradient */
+  font-size: 30px;
+  font-weight: 700;
+  color: #ff4c4c; /* bright red text */
+
+  /* subtle black outline / stroke effect */
+  -webkit-text-stroke: 1px rgba(0,0,0,0.7);
+  text-shadow: 
+    1px 1px 1px rgba(0,0,0,0.5),
+   -1px 1px 1px rgba(0,0,0,0.5),
+    1px -1px 1px rgba(0,0,0,0.5),
+}
+.seat__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 6px;
+  background: rgba(220, 235, 220, 0.5); /* very soft green tint */
 }
 
 .seat__name {
   font-weight: 700;
   font-size: 13px;
-  opacity: 0.95;
+  max-width: 110px;          /* ~10 characters */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  padding-right: 6px;
+  line-height: 1.2;
+}
+.seat__name {
+  cursor: default;
+}
+
+.seat__name:hover {
+  text-decoration: underline dotted;
 }
 
 .seat__score {
@@ -131,6 +161,9 @@
   padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.10);
   overflow: hidden;
+
+  background-color: rgba(0, 0, 0, 0.05); /* very subtle dark overlay */
+  border-radius: 6px; /* soften the edges */
 }
 
 .seat__hand {
@@ -140,7 +173,10 @@
   gap: 0;
   flex: 1;
   min-width: 0;
+
+  background-color: transparent; /* hand itself stays invisible */
 }
+
 
 /* overlap tiles a bit */
 .seat__hand .tilebtn + .tilebtn {
@@ -160,18 +196,6 @@
   border-radius: 6px;
 }
 
-/* Hand row */
-.seat__hand {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0;
-  align-items: flex-end;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px;
-  background: rgba(139, 69, 19, 0.3);
-  border-radius: 6px;
-}
 
 .seat__hand::-webkit-scrollbar {
   height: 8px;
