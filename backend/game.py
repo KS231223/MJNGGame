@@ -86,9 +86,7 @@ class Game:
         player.add_tile(drawnTile.to_dict())
         possible_actions = self.validator_1.get_current_players_actions(player)
         return possible_actions, drawnTile.to_dict()
-        #i return here first because i think let app.py send back and get back the new action, only when app.py receive the discard then we call second phase
-        # self.discard_tile()
-        # self.second_phase()
+
 
     def second_phase(self):
         if self.gameWon:
@@ -101,27 +99,6 @@ class Game:
     def apply_reaction(self, sid, choice, pending):
         pass
 
-
-
-        # top_action = actions_queue[0]
-
-        # sid, action = top_action
-        # player = next(p for p in self.players if p.sid == sid)
-
-        # if action == "win":
-        #     self.gameWon = True
-        #     return
-        # else:
-        #     player.add_tile(self.lastDiscardedTile)
-        #     self.discard_tile()
-
-        # self.second_phase()
-        # else:
-        #     return None
-        #     self.turn_index = (self.turn_index) % len(self.players) + 1
-        #     self.first_phase()
-
-    
         
 """
 Schema for player entity

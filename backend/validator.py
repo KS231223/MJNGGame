@@ -36,13 +36,13 @@ class Phase2Validator:
             tiles_same = [t for t in player.tileHand if same_tile(t, last_discarded_tile)]
             count = len(tiles_same)
             if count >= 2:
-                pong_or_kong.append((player.sid, tiles_same[:2], "pong"))  
+                pong_or_kong.append((player.sid, tiles_same[:2], last_discarded_tile, "pong"))  
             if count >= 3:
-                pong_or_kong.append((player.sid, tiles_same[:3], "kong"))
+                pong_or_kong.append((player.sid, tiles_same[:3], last_discarded_tile, "kong"))
                 
 
             for tiles in chi_options(player, last_discarded_tile):
-                chi.append((player.sid, tiles, "chi")) 
+                chi.append((player.sid, tiles, last_discarded_tile, "chi")) 
 
             if False:
                 #this is just a placeholder until I get the win conditional
@@ -75,7 +75,7 @@ def chi_options(player, last_discarded_tile: Dict[str, Any]):
     chi1 = []
     chi2 = []
     chi3 = []
-    for i in range(allNumbersOfSameSuit):
+    for i in range(len(allNumbersOfSameSuit)):
         if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor - 2 in allNumbersOfSameSuit:
             chi1.extend([numberToCheckFor - 1, numberToCheckFor - 2])
         if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor + 1 in allNumbersOfSameSuit:

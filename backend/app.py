@@ -64,8 +64,9 @@ def game_action(data):
         print("discarded!")
         tile = data["tile"]
         table.game.discard_tile(sid, tile)
-        win, pong_or_kong, chi = table.game.second_phase()
         emit("discard-tile", {"tile": tile, "sid": sid}, to=table_id)
+
+        win, pong_or_kong, chi = table.game.second_phase()
 
         # init pending decision state
         table.game.pending = {
@@ -153,21 +154,45 @@ def on_leave_room(data):
 
 #helper func
 def send_action(table, tier, entries):
+    """
+    entries: list of tuples:
+      (sid, using_tiles, take_tile, action_type)
 
-    print(tier)
-    print(entries)
-    # entries is list of (sid, payload)
+    Example:
+      (player.sid, tiles_same[:2], last_discarded_tile, "pong")
+      (player.sid, tiles_same[:3], last_discarded_tile, "kong")
+      (player.sid, chi_tiles,       last_discarded_tile, "chi")
+    """
+
     table.game.pending["tier"] = tier
-    table.game.pending["eligible"] = list({sid for sid, _, _ in entries})
-    table.game.pending["responses"] = {}
 
+    # eligible sids (no weird unpacking)
+    eligible = sorted({sid for (sid, _, _, _) in entries})
+    table.game.pending["eligible"] = eligible
+    table.game.pending["responses"] = {}  # sid -> response
+
+    # group options per sid
     by_sid = {}
-    for sid, _, payload in entries:
-        by_sid.setdefault(sid, []).append(payload)
+    for sid, using_tiles, take_tile, action_type in entries:
+        option = {
+            "action": action_type,     # "pong"/"kong"/"chi"/"win"
+            "using": using_tiles,      # list of tile dicts from hand
+            "take": take_tile,         # tile dict being claimed
+        }
+        by_sid.setdefault(sid, []).append(option)
 
-    for sid, payloads in by_sid.items():
-        socketio.emit("reaction-options", {"tier": tier, "options": payloads}, to=sid)
-
+    # emit only to those sids
+    for sid, options in by_sid.items():
+        message = {"tier": tier,          # e.g. "pong_or_kong" or "chi" or "win"
+                "options": options,}    # list of {action, using, take}
+        
+        print("message: ")
+        print(message)
+        socketio.emit(
+            "reaction-options",
+            message,
+            to=sid,
+        )
 
 if __name__ == "__main__":
     socketio.run(app, host="127.0.0.1", port=5000, debug=True)
