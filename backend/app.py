@@ -144,6 +144,9 @@ def reaction_choice(data):
             send_action(table, "chi", pending["chi"])
         else:
             table.game.pending = None
+            print("all passed!")
+            table.game.turn_index = (table.game.turn_index % 4) + 1
+
             emit_full_state(table)
             # continue game
 

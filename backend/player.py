@@ -7,7 +7,7 @@ class Player:
         self.revealedHand = []
         self.revealedChi = []
         self.revealedPong = []
-        self.revealedKang = []
+        self.revealedKong = []
         self.tileHand = []
         self.pointHand = []
         self.name = sid
