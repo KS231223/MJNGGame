@@ -64,6 +64,10 @@ export default function TablePage() {
   const [drewThisTurn, setDrewThisTurn] = useState(false);
   const drewRef = useRef(false);
 
+  // true only when server says "new natural turn started"
+  const shouldAutoDrawRef = useRef(false);
+
+
   // detect turn changes
   const lastTurnSeatRef = useRef(null);
 
@@ -90,8 +94,9 @@ export default function TablePage() {
       setReactionOptions(null);
     }
 
-    // ONLY AUTO-DRAW WHEN TURN JUST CHANGED TO YOU
-    if (turnChanged && merged.isMyTurn && !drewRef.current) {
+    if (turnChanged && merged.isMyTurn && shouldAutoDrawRef.current && !drewRef.current) {
+      shouldAutoDrawRef.current = false; // consume it
+
       drewRef.current = true;
       setDrewThisTurn(true);
 
@@ -100,6 +105,7 @@ export default function TablePage() {
 
       socket.emit("game-action", { tableId, type: "draw" });
     }
+
 
     setTableState((prev) => ({
       ...merged,
@@ -116,15 +122,23 @@ export default function TablePage() {
 
     const onStart = ({ table_state, player_state }) => {
       const merged = mergeState(table_state, player_state);
+      shouldAutoDrawRef.current = true;
       applyMergedState(merged);
     };
 
     const onUpdate = (payload) => {
       if (payload?.table_state && payload?.player_state) {
+        if (payload.reason === "next-turn") {
+          shouldAutoDrawRef.current = true;
+        } else {
+          shouldAutoDrawRef.current = false;
+        }
+
         const merged = mergeState(payload.table_state, payload.player_state);
         applyMergedState(merged);
       }
     };
+
 
     const onPossibleActions = (payload) => {
       const actions = Array.isArray(payload?.actions) ? payload.actions : [];

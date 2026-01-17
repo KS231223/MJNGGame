@@ -91,7 +91,7 @@ def game_action(data):
         else:
             table.game.pending = None
             table.game.turn_index = (table.game.turn_index % 4) + 1
-            emit_full_state(table)
+            emit_full_state(table, reason="next-turn")
 
 @socketio.on("reaction-choice")
 def reaction_choice(data):
@@ -122,7 +122,7 @@ def reaction_choice(data):
 
         table.game.pending = None
 
-        emit_full_state(table)
+        emit_full_state(table, "reaction")
         
         #if kong return back to phase one for the player who kong
         if action == "kong":
@@ -147,7 +147,7 @@ def reaction_choice(data):
             print("all passed!")
             table.game.turn_index = (table.game.turn_index % 4) + 1
 
-            emit_full_state(table)
+            emit_full_state(table, reason="next-turn")
             # continue game
 
 
@@ -223,14 +223,14 @@ def send_action(table, tier, entries):
         )
 
 
-def emit_full_state(table):
+def emit_full_state(table, reason=None):
     table_state = table.to_state()  # MUST be public only (no tileHand for other players)
 
     for sid in table.players.keys():
         player_state = table.players[sid].to_state()  # includes tileHand for THIS player only
         socketio.emit(
             "table-update",
-            {"table_state": table_state, "player_state": player_state},
+            {"table_state": table_state, "player_state": player_state, "reason": reason},
             to=sid
         )
 
