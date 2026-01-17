@@ -95,8 +95,10 @@ class Game:
         player = self.players[self.turn_index - 1]
         if sid != player.sid:
             return
+        
         drawnTile = self.deck.draw_tile().to_dict()
-        while drawnTile["type"] == "point":
+
+        while drawnTile.get("type") == "point":
             player.add_point(drawnTile)
             drawnTile = self.deck.draw_tile().to_dict()
         
