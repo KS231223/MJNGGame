@@ -54,54 +54,51 @@ class Phase2Validator:
 #helper func
 
 
-def chi_options(player, last_discarded_tile: Dict[str, Any]) -> List[Tuple[int, int, int]]:
+def chi_options(player, last_discarded_tile: Dict[str, Any]):
     """
     Returns all possible chi sequences (as tuples of numbers) the player can make
     using `last_discarded_tile`.
 
     Example return: [(3,4,5), (4,5,6)]
     """
-    if not last_discarded_tile:
-        return []
+    playerHand = player.tileHand
+    #this will be a list of dictionary of tiles.to_dict()
+    tile = last_discarded_tile
+    suitToCheckFor = tile["suit"]
+    numberToCheckFor = tile["number"]
+    allTilesOfSameSuit = [t for t in playerHand if same_suit(t, tile)]
+    allNumbersOfSameSuit = []
+    for i in range(len(allTilesOfSameSuit)):
+        allNumbersOfSameSuit.append(allTilesOfSameSuit[i]["number"])
+    allNumbersOfSameSuit = list(set([int(x) for x in allNumbersOfSameSuit]))
+    allNumbersOfSameSuit.sort()
+    chi1 = [numberToCheckFor]
+    chi2 = [numberToCheckFor]
+    chi3 = [numberToCheckFor]
+    for i in range(allNumbersOfSameSuit):
+        if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor - 2 in allNumbersOfSameSuit:
+            chi1.extend([numberToCheckFor - 1, numberToCheckFor - 2])
+        if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor + 1 in allNumbersOfSameSuit:
+            chi2.extend([numberToCheckFor - 1, numberToCheckFor + 1])
+        if numberToCheckFor + 1 in allNumbersOfSameSuit and numberToCheckFor + 2 in allNumbersOfSameSuit:
+            chi3.extend([numberToCheckFor + 1, numberToCheckFor + 2])
+    possibleChis = [ chi for chi in [chi1, chi2, chi3] if len(chi) == 3]
+    finalChis = []
+    for chi in possibleChis:
+        chiTiles = []
+        for number in chi:
+            for t in allTilesOfSameSuit:
+                if t["number"] == number and t not in chiTiles:
+                    chiTiles.append(t)
+                    break
+        
+        finalChis.append(chiTiles)
+    return finalChis
 
-    # Chi only applies to suited "normal" tiles
-    if last_discarded_tile.get("type") != "normal":
-        return []
 
-    suit = last_discarded_tile.get("suit")
-    num = last_discarded_tile.get("number")
-
-    if suit not in ("wan", "ball", "stick"):
-        return []
-    if not isinstance(num, int):
-        return []
-
-    # Count player's suited tiles by number
-    nums = [
-        t.get("number")
-        for t in getattr(player, "tileHand", [])
-        if t.get("type") == "normal" and t.get("suit") == suit
-    ]
-    counts = Counter(nums)
-
-    options: List[Tuple[int, int, int]] = []
-
-    # Possible sequences including num:
-    # (num-2,num-1,num), (num-1,num,num+1), (num,num+1,num+2)
-    for start in (num - 2, num - 1, num):
-        a, b, c = start, start + 1, start + 2
-
-        # Must be within 1..9
-        if a < 1 or c > 9:
-            continue
-
-        # Need the other two numbers (excluding discarded num)
-        needed = [x for x in (a, b, c) if x != num]
-
-        if counts[needed[0]] >= 1 and counts[needed[1]] >= 1:
-            options.append((a, b, c))
-
-    return options
 
 def same_tile(tile_1, tile_2):
     return tile_1["number"] == tile_2["number"] and tile_1["suit"] == tile_2["suit"]
+
+def same_suit(tile_1, tile_2):
+    return tile_1["suit"] == tile_2["suit"]
