@@ -70,12 +70,14 @@ export default function TablePage() {
   // backend says what actions you can do now
   const [possibleActions, setPossibleActions] = useState([]);
 
-  // ✅ FIX 1: define inside component so it can see refs/setters/tableId
+  // inside TablePage component
   const applyMergedState = (merged) => {
     const currentTurnSeat = merged.currentTurnSeat;
 
+    const turnChanged = lastTurnSeatRef.current !== currentTurnSeat;
+
     // reset per-turn stuff if seat changed
-    if (lastTurnSeatRef.current !== currentTurnSeat) {
+    if (turnChanged) {
       lastTurnSeatRef.current = currentTurnSeat;
 
       drewRef.current = false;
@@ -88,8 +90,8 @@ export default function TablePage() {
       setReactionOptions(null);
     }
 
-    // AUTO-DRAW only when it's your turn AND you haven't drawn this turn
-    if (merged.isMyTurn && !drewRef.current) {
+    // ONLY AUTO-DRAW WHEN TURN JUST CHANGED TO YOU
+    if (turnChanged && merged.isMyTurn && !drewRef.current) {
       drewRef.current = true;
       setDrewThisTurn(true);
 
@@ -99,13 +101,13 @@ export default function TablePage() {
       socket.emit("game-action", { tableId, type: "draw" });
     }
 
-    // store merged; preserve local-only centerDiscards if you use it elsewhere
     setTableState((prev) => ({
       ...merged,
       centerDiscards:
         prev?.centerDiscards ?? { bottom: [], right: [], top: [], left: [] },
     }));
   };
+
 
   useEffect(() => {
     if (!tableId) return;

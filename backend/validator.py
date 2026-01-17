@@ -47,9 +47,9 @@ class Phase2Validator:
             if count >= 3:
                 pong_or_kong.append((player.sid, tiles_same[:3], last_discarded_tile, "kong"))
                 
-
-            for tiles in chi_options(player, last_discarded_tile):
-                chi.append((player.sid, tiles, last_discarded_tile, "chi")) 
+            if player.seat == (self.game.turn_index%4) + 1:
+                for tiles in chi_options(player, last_discarded_tile):
+                    chi.append((player.sid, tiles, last_discarded_tile, "chi")) 
 
             if False:
                 #TODO ADD CHECK FOR WIN CONDITION
@@ -68,6 +68,8 @@ def chi_options(player, last_discarded_tile: Dict[str, Any]):
 
     Example return: [(3,4,5), (4,5,6)]
     """
+    if last_discarded_tile.get("type") != "normal":
+        return []
     playerHand = player.tileHand
     #this will be a list of dictionary of tiles.to_dict()
     tile = last_discarded_tile
