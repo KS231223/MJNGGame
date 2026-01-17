@@ -5,6 +5,7 @@
 
 from collections import Counter
 from typing import List, Tuple, Dict, Any
+from wincondition import WinCondition
 
 
 class Phase1Validator:
@@ -12,6 +13,8 @@ class Phase1Validator:
         self.game = game
 
     def get_current_players_actions(self,player, tile:dict):
+        winChecker = WinCondition()
+        win = []
         actions_by_player = {}
         actions_by_player[player.sid] = []
         #do check for win or self-kang here
@@ -20,6 +23,10 @@ class Phase1Validator:
 
         if count == 3:
             actions_by_player.append(( "kong", tiles_same[:3], tile))
+        result = winChecker.check_win(player.tileHand,  player.revealedPong, player.revealedChi, player.revealedKong)
+        if result:
+            #TODO ADD CHECK FOR WIN CONDITION
+            actions_by_player.append("win",result)     
 
         #TODO ADD CHECK FOR WIN CONDITION 
         actions_by_player[player.sid].append("discard")
@@ -31,7 +38,7 @@ class Phase2Validator:
         self.game = game
 
     def get_all_players_reactions(self, last_discarded_tile):
-        
+        winChecker = WinCondition()
         win = []
         pong_or_kong = []
         chi = []
@@ -50,10 +57,11 @@ class Phase2Validator:
             if player.seat == (self.game.turn_index%4) + 1:
                 for tiles in chi_options(player, last_discarded_tile):
                     chi.append((player.sid, tiles, last_discarded_tile, "chi")) 
-
-            if False:
+                    
+            result = winChecker.check_win(player.tileHand + [last_discarded_tile], player.revealedPong, player.revealedChi, player.revealedKong)
+            if result:
                 #TODO ADD CHECK FOR WIN CONDITION
-                win.append(player.sid, winning_tile_sequence, "win")     
+                win.append(player.sid, result, "win")     
 
         return win, pong_or_kong, chi
 
@@ -111,3 +119,4 @@ def same_tile(tile_1, tile_2):
 
 def same_suit(tile_1, tile_2):
     return tile_1["suit"] == tile_2["suit"]
+

@@ -134,7 +134,9 @@ class Game:
             tile_set = tile_set + tiles_to_use 
             tile_set.append(last_discarded_tile)
             tile_set.sort(key=lambda t: t.get("number"))
-            player.revealedChi.append(tile_set)
+            tile_values = [tile_to_value(t) for t in tile_set]
+            min_value = min(tile_values)
+            player.revealedChi.append(min_value)
             player.revealedHand.append(tile_set)
             for tile in tiles_to_use:
                 player.tileHand.remove(tile)
@@ -142,7 +144,9 @@ class Game:
         elif action == "pong":
             tile_set.append(tiles_to_use)
             tile_set.append(last_discarded_tile)
-            player.revealedPong.append(tile_set)
+            tile_values = [tile_to_value(t) for t in tile_set]
+            min_value = min(tile_values)
+            player.revealedPong.append(min_value)
             player.revealedHand.append(tile_set)
             for tile in tiles_to_use:
                 player.tileHand.remove(tile)  
@@ -151,7 +155,9 @@ class Game:
         elif action == "kong":
             tile_set.append(tiles_to_use)
             tile_set.append(last_discarded_tile)
-            player.revealedKong.append(tile_set)
+            tile_values = [tile_to_value(t) for t in tile_set]
+            min_value = min(tile_values)
+            player.revealedKong.append(min_value)
             player.revealedHand.append(tile_set)
             for tile in tiles_to_use:
                 player.tileHand.remove(tile)
@@ -177,3 +183,23 @@ Schema for hands from initialize_hands
 {"tiles":playerTiles,
 "points":playerPoints}
 """
+
+
+
+
+def tile_to_value(tile: dict) -> int:
+        """Convert a Tile object to its value index (0-34)"""
+        suit = tile.get("suit")
+        number = tile.get("number")
+        if suit == "ball":
+            return number - 1  # 0-8
+        elif suit == "stick":
+            return number - 1 + 9  # 9-17
+        elif suit == "wan":
+            return number - 1 + 18  # 18-26
+        elif suit == "wind":
+            return number - 1 + 27  # 27-30
+        elif suit == "big":
+            return number - 1 + 31  # 31-34
+        else:
+            return -1  # Flowers/animals not counted in hand
