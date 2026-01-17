@@ -72,9 +72,9 @@ def chi_options(player, last_discarded_tile: Dict[str, Any]):
         allNumbersOfSameSuit.append(allTilesOfSameSuit[i]["number"])
     allNumbersOfSameSuit = list(set([int(x) for x in allNumbersOfSameSuit]))
     allNumbersOfSameSuit.sort()
-    chi1 = [numberToCheckFor]
-    chi2 = [numberToCheckFor]
-    chi3 = [numberToCheckFor]
+    chi1 = []
+    chi2 = []
+    chi3 = []
     for i in range(allNumbersOfSameSuit):
         if numberToCheckFor - 1 in allNumbersOfSameSuit and numberToCheckFor - 2 in allNumbersOfSameSuit:
             chi1.extend([numberToCheckFor - 1, numberToCheckFor - 2])
@@ -82,13 +82,13 @@ def chi_options(player, last_discarded_tile: Dict[str, Any]):
             chi2.extend([numberToCheckFor - 1, numberToCheckFor + 1])
         if numberToCheckFor + 1 in allNumbersOfSameSuit and numberToCheckFor + 2 in allNumbersOfSameSuit:
             chi3.extend([numberToCheckFor + 1, numberToCheckFor + 2])
-    possibleChis = [ chi for chi in [chi1, chi2, chi3] if len(chi) == 3]
+    possibleChis = [ chi for chi in [chi1, chi2, chi3] if len(chi) == 2]
     finalChis = []
     for chi in possibleChis:
         chiTiles = []
         for number in chi:
             for t in allTilesOfSameSuit:
-                if t["number"] == number and t not in chiTiles:
+                if t["number"] == number:
                     chiTiles.append(t)
                     break
         
