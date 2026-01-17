@@ -21,14 +21,13 @@ class Phase1Validator:
         tiles_same = [t for t in player.tileHand if same_tile(t, tile)]
         count = len(tiles_same)
 
-        if count == 3:
-            actions_by_player.append(( "kong", tiles_same[:3], tile))
         result = winChecker.check_win(player.tileHand,  player.revealedPong, player.revealedChi, player.revealedKong)
         if result:
-            #TODO ADD CHECK FOR WIN CONDITION
-            actions_by_player.append("win",result)     
+            actions_by_player[player.sid].append("win",result)     
 
-        #TODO ADD CHECK FOR WIN CONDITION 
+        if count == 4:
+            actions_by_player[player.sid].append(( "kong", tiles_same[:3], tile))
+            
         actions_by_player[player.sid].append("discard")
         return actions_by_player
 

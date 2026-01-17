@@ -38,7 +38,10 @@ class Table:
             "norm_direction": getattr(self.game, "norm_direction", True),
             #like mini states for each player that should be public
             "players": [
-                {"sid": p.sid, "seat": p.seat, "name": p.name, "money": p.money}
+                {"sid": p.sid, "seat": p.seat, 
+                 "name": p.name, "money": p.money, 
+                 "revealed_hand": p.revealedHand, 
+                 "point_hand": p.pointHand}
                 for p in self.players.values()
                 ]
         }
