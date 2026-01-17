@@ -61,6 +61,7 @@ def game_action(data):
         emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
 
     elif data["type"] == "discard":
+        print("discarded!")
         tile = data["tile"]
         table.game.discard_tile(sid, tile)
         win, pong_or_kong, chi = table.game.second_phase()
