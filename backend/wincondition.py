@@ -37,59 +37,8 @@ class WinCondition:
                 hand[value] += 1
         return tuple(hand)
     
-    def process_revealed_melds(self, revealed_tiles: list) -> tuple:
-        """
-        Process revealed tiles and extract melds.
-        Assumes revealed tiles are organized in groups of 3 or 4.
-        
-        Args:
-            revealed_tiles: List of Tile objects in revealed hand
-        
-        Returns:
-            tuple: (pong_list, chi_list)
-        """
-        pong_list = []
-        chi_list = []
-        
-        if not revealed_tiles:
-            return (pong_list, chi_list)
-        
-        # Group tiles by sorting them
-        i = 0
-        while i < len(revealed_tiles):
-            # Assume melds are consecutive in the list
-            # Check if next 3-4 tiles form a meld
-            if i + 3 <= len(revealed_tiles):
-                meld = revealed_tiles[i:i+4] if i + 4 <= len(revealed_tiles) else revealed_tiles[i:i+3]
-                
-                # Check if it's a pong/kang (all same tile value)
-                first_value = self.tile_to_value(meld[0])
-                if all(self.tile_to_value(t) == first_value for t in meld):
-                    pong_list.append(first_value)
-                    i += len(meld)
-                # Check if it's a chi (sequence of 3)
-                elif len(meld) == 3:
-                    values = sorted([self.tile_to_value(t) for t in meld])
-                    # Check if consecutive in same suit
-                    if values[1] == values[0] + 1 and values[2] == values[1] + 1:
-                        # Check same suit
-                        if (values[0] < 9 and values[2] < 9) or \
-                           (9 <= values[0] < 18 and values[2] < 18) or \
-                           (18 <= values[0] < 27 and values[2] < 27):
-                            chi_list.append(values[0])
-                            i += 3
-                        else:
-                            i += 1
-                    else:
-                        i += 1
-                else:
-                    i += 1
-            else:
-                break
-        
-        return (pong_list, chi_list)
     
-    def check_win(self, revealed_hand: list, tile_hand: list) -> dict:
+    def check_win(self, tile_hand: list, revealed_pong, revealed_chi, revealed_kang ) -> dict:
         """
         Check if the hand is a winning hand.
         
@@ -102,26 +51,30 @@ class WinCondition:
             or None if not a winning hand
         """
         # Process revealed melds first
-        pong_list, chi_list = self.process_revealed_melds(revealed_hand)
+        pong_list = revealed_pong if revealed_pong else []
+        chi_list  = revealed_chi  if revealed_chi  else []
+        kang_list = revealed_kang if revealed_kang else []
         
         # Convert tile hand to tuple
         hand_tuple = self.tiles_to_hand_tuple(tile_hand)
         hand = list(hand_tuple)
         
         # Create memoization key
-        memo_key = (tuple(hand), tuple(pong_list), tuple(chi_list))
+        memo_key = (tuple(hand), tuple(pong_list), tuple(chi_list), tuple(kang_list))
         if memo_key in self.memo:
             return self.memo[memo_key]
+        #I am 100% this shit doesnt work
+        #If got more time I will redo this
         
         # Start recursion
-        result = self._find_melds(hand, pong_list, chi_list)
+        result = self._find_melds(hand, pong_list, chi_list, kang_list)
         
         # Cache result
         self.memo[memo_key] = result
         
         return result
     
-    def _find_melds(self, hand: list, pong_list: list, chi_list: list) -> dict:
+    def _find_melds(self, hand: list, pong_list: list, chi_list: list, kang_list: list) -> dict:
         """
         Recursively find valid meld combinations.
         
@@ -130,12 +83,13 @@ class WinCondition:
         # Check if hand is empty - valid win if we have pair + 4 melds
         total_tiles = sum(hand)
         if total_tiles == 0:
-            total_melds = len(pong_list) + len(chi_list)
+            total_melds = len(pong_list) + len(chi_list) + len(kang_list)
             if total_melds == 4:
                 return {
                     'win': True,
                     'pong_list': pong_list.copy(),
-                    'chi_list': chi_list.copy()
+                    'chi_list': chi_list.copy(),
+                    'kang_list':kang_list.copy()
                 }
             return None
         
@@ -143,10 +97,11 @@ class WinCondition:
         for i in range(35):
             if hand[i] > 0:
                 # Try taking pair first
+                # We should establish the pair and have a sentinel value to check if pair already taken to prune more aggressively but this suffices for now
                 if hand[i] >= 2:
                     new_hand = hand.copy()
                     new_hand[i] -= 2
-                    result = self._find_melds(new_hand, pong_list.copy(), chi_list.copy())
+                    result = self._find_melds(new_hand, pong_list.copy(), chi_list.copy(),kang_list.copy())
                     if result:
                         return result
                 
@@ -156,7 +111,7 @@ class WinCondition:
                     new_hand[i] -= 3
                     new_pong = pong_list.copy()
                     new_pong.append(i)
-                    result = self._find_melds(new_hand, new_pong, chi_list.copy())
+                    result = self._find_melds(new_hand, new_pong, chi_list.copy(),kang_list.copy())
                     if result:
                         return result
                 
@@ -169,7 +124,7 @@ class WinCondition:
                     new_hand[i+2] -= 1
                     new_chi = chi_list.copy()
                     new_chi.append(i)
-                    result = self._find_melds(new_hand, pong_list.copy(), new_chi)
+                    result = self._find_melds(new_hand, pong_list.copy(), new_chi,kang_list.copy())
                     if result:
                         return result
                 
@@ -181,7 +136,7 @@ class WinCondition:
                     new_hand[i+2] -= 1
                     new_chi = chi_list.copy()
                     new_chi.append(i)
-                    result = self._find_melds(new_hand, pong_list.copy(), new_chi)
+                    result = self._find_melds(new_hand, pong_list.copy(), new_chi,kang_list.copy())
                     if result:
                         return result
                 
@@ -193,7 +148,7 @@ class WinCondition:
                     new_hand[i+2] -= 1
                     new_chi = chi_list.copy()
                     new_chi.append(i)
-                    result = self._find_melds(new_hand, pong_list.copy(), new_chi)
+                    result = self._find_melds(new_hand, pong_list.copy(), new_chi,kang_list.copy())
                     if result:
                         return result
                 
@@ -231,17 +186,17 @@ if __name__ == "__main__":
     print("=" * 60)
     test_tiles_1 = []
     for _ in range(3):
-        test_tiles_1.append(Tile("normal", "ball", 1, 1))
+        test_tiles_1.append(Tile("normal", "ball", 1, 1).to_dict())
     for _ in range(3):
-        test_tiles_1.append(Tile("normal", "ball", 2, 1))
+        test_tiles_1.append(Tile("normal", "ball", 2, 1).to_dict())
     for _ in range(3):
-        test_tiles_1.append(Tile("normal", "ball", 3, 1))
+        test_tiles_1.append(Tile("normal", "ball", 3, 1).to_dict())
     for _ in range(3):
-        test_tiles_1.append(Tile("normal", "ball", 4, 1))
+        test_tiles_1.append(Tile("normal", "ball", 4, 1).to_dict())
     for _ in range(2):
-        test_tiles_1.append(Tile("normal", "ball", 5, 1))
+        test_tiles_1.append(Tile("normal", "ball", 5, 1).to_dict())
     
-    result_1 = win_checker.check_win([], test_tiles_1)
+    result_1 = win_checker.check_win(test_tiles_1,[],[],[])
     print(f"Result: {result_1}")
     if result_1:
         print(f"Pongs: {[value_to_string(v) for v in result_1['pong_list']]}")
@@ -253,21 +208,21 @@ if __name__ == "__main__":
     print("TEST 2: Chi Hand (1-2-3 ball, 4-5-6 ball, 7-8-9 stick, 3x 1-wan, 2x 2-wan)")
     print("=" * 60)
     test_tiles_2 = []
-    test_tiles_2.append(Tile("normal", "ball", 1, 1))
-    test_tiles_2.append(Tile("normal", "ball", 2, 1))
-    test_tiles_2.append(Tile("normal", "ball", 3, 1))
-    test_tiles_2.append(Tile("normal", "ball", 4, 1))
-    test_tiles_2.append(Tile("normal", "ball", 5, 1))
-    test_tiles_2.append(Tile("normal", "ball", 6, 1))
-    test_tiles_2.append(Tile("normal", "stick", 7, 1))
-    test_tiles_2.append(Tile("normal", "stick", 8, 1))
-    test_tiles_2.append(Tile("normal", "stick", 9, 1))
+    test_tiles_2.append(Tile("normal", "ball", 1, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "ball", 2, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "ball", 3, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "ball", 4, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "ball", 5, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "ball", 6, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "stick", 7, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "stick", 8, 1).to_dict())
+    test_tiles_2.append(Tile("normal", "stick", 9, 1).to_dict())
     for _ in range(3):
-        test_tiles_2.append(Tile("normal", "wan", 1, 1))
+        test_tiles_2.append(Tile("normal", "wan", 1, 1).to_dict())
     for _ in range(2):
-        test_tiles_2.append(Tile("normal", "wan", 2, 1))
+        test_tiles_2.append(Tile("normal", "wan", 2, 1).to_dict())
     
-    result_2 = win_checker.check_win([], test_tiles_2)
+    result_2 = win_checker.check_win(test_tiles_2,[],[],[])
     print(f"Result: {result_2}")
     if result_2:
         print(f"Pongs: {[value_to_string(v) for v in result_2['pong_list']]}")
@@ -279,17 +234,17 @@ if __name__ == "__main__":
     print("TEST 3: Invalid Hand (random tiles)")
     print("=" * 60)
     test_tiles_3 = []
-    test_tiles_3.append(Tile("normal", "ball", 1, 1))
-    test_tiles_3.append(Tile("normal", "ball", 3, 1))
-    test_tiles_3.append(Tile("normal", "ball", 5, 1))
-    test_tiles_3.append(Tile("normal", "stick", 2, 1))
-    test_tiles_3.append(Tile("normal", "stick", 4, 1))
-    test_tiles_3.append(Tile("normal", "wan", 1, 1))
-    test_tiles_3.append(Tile("special", "wind", 1, 1))
+    test_tiles_3.append(Tile("normal", "ball", 1, 1).to_dict())
+    test_tiles_3.append(Tile("normal", "ball", 3, 1).to_dict())
+    test_tiles_3.append(Tile("normal", "ball", 5, 1).to_dict())
+    test_tiles_3.append(Tile("normal", "stick", 2, 1).to_dict())
+    test_tiles_3.append(Tile("normal", "stick", 4, 1).to_dict())
+    test_tiles_3.append(Tile("normal", "wan", 1, 1).to_dict())
+    test_tiles_3.append(Tile("special", "wind", 1, 1).to_dict())
     for _ in range(7):
-        test_tiles_3.append(Tile("normal", "wan", 7, 1))
+        test_tiles_3.append(Tile("normal", "wan", 7, 1).to_dict())
     
-    result_3 = win_checker.check_win([], test_tiles_3)
+    result_3 = win_checker.check_win(test_tiles_3, [], [], [])
     print(f"Result: {result_3}")
     print()
 
@@ -299,24 +254,16 @@ if __name__ == "__main__":
     print("Revealed: pong of 1-ball (3 tiles), chi 1-2-3 stick")
     print("Unrevealed: 3x 5-wan, 3x 6-wan, 2x 7-wan")
     print("=" * 60)
-    revealed = []
-    # Pong of 1-ball
-    for _ in range(3):
-        revealed.append(Tile("normal", "ball", 1, 1))
-    # Chi of 1-2-3 stick
-    revealed.append(Tile("normal", "stick", 1, 1))
-    revealed.append(Tile("normal", "stick", 2, 1))
-    revealed.append(Tile("normal", "stick", 3, 1))
     
     unrevealed = []
     for _ in range(3):
-        unrevealed.append(Tile("normal", "wan", 5, 1))
+        unrevealed.append(Tile("normal", "wan", 5, 1).to_dict())
     for _ in range(3):
-        unrevealed.append(Tile("normal", "wan", 6, 1))
+        unrevealed.append(Tile("normal", "wan", 6, 1).to_dict())
     for _ in range(2):
-        unrevealed.append(Tile("normal", "wan", 7, 1))
+        unrevealed.append(Tile("normal", "wan", 7, 1).to_dict())
     
-    result_4 = win_checker.check_win(revealed, unrevealed)
+    result_4 = win_checker.check_win(unrevealed,[1],[1],[])
     print(f"Result: {result_4}")
     if result_4:
         print(f"Total Pongs: {[value_to_string(v) for v in result_4['pong_list']]}")
@@ -330,9 +277,9 @@ if __name__ == "__main__":
     test_tiles_5 = []
     for num in range(1, 8):
         for _ in range(2):
-            test_tiles_5.append(Tile("normal", "ball", num, 1))
+            test_tiles_5.append(Tile("normal", "ball", num, 1).to_dict())
     
-    result_5 = win_checker.check_win([], test_tiles_5)
+    result_5 = win_checker.check_win(test_tiles_5,[],[],[])
     print(f"Result: {result_5}")
     print("(Seven pairs is a special hand pattern not handled by standard meld logic)")
     print()
@@ -345,22 +292,22 @@ if __name__ == "__main__":
     print("=" * 60)
     revealed_6 = []
     for _ in range(4):
-        revealed_6.append(Tile("normal", "wan", 3, 1))
+        revealed_6.append(Tile("normal", "wan", 3, 1).to_dict())
     
     unrevealed_6 = []
-    unrevealed_6.append(Tile("normal", "ball", 1, 1))
-    unrevealed_6.append(Tile("normal", "ball", 2, 1))
-    unrevealed_6.append(Tile("normal", "ball", 3, 1))
-    unrevealed_6.append(Tile("normal", "ball", 4, 1))
-    unrevealed_6.append(Tile("normal", "ball", 5, 1))
-    unrevealed_6.append(Tile("normal", "ball", 6, 1))
-    unrevealed_6.append(Tile("normal", "ball", 7, 1))
-    unrevealed_6.append(Tile("normal", "ball", 8, 1))
-    unrevealed_6.append(Tile("normal", "ball", 9, 1))
+    unrevealed_6.append(Tile("normal", "ball", 1, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 2, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 3, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 4, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 5, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 6, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 7, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 8, 1).to_dict())
+    unrevealed_6.append(Tile("normal", "ball", 9, 1).to_dict())
     for _ in range(2):
-        unrevealed_6.append(Tile("normal", "stick", 5, 1))
+        unrevealed_6.append(Tile("normal", "stick", 5, 1).to_dict())
     
-    result_6 = win_checker.check_win(revealed_6, unrevealed_6)
+    result_6 = win_checker.check_win(unrevealed_6,[],[],[34])
     print(f"Result: {result_6}")
     if result_6:
         print(f"Total Pongs: {[value_to_string(v) for v in result_6['pong_list']]}")
