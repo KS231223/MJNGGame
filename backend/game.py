@@ -95,10 +95,15 @@ class Game:
         player = self.players[self.turn_index - 1]
         if sid != player.sid:
             return
-        drawnTile = self.deck.draw_tile()
-        player.add_tile(drawnTile.to_dict())
+        drawnTile = self.deck.draw_tile().todict()
+        while drawnTile.type != "point":
+            player.add_point(drawnTile)
+            drawnTile = self.deck.draw_tile().todict()
+        
+        player.add_tile(drawnTile)
+
         possible_actions = self.validator_1.get_current_players_actions(player)
-        return possible_actions, drawnTile.to_dict()
+        return possible_actions, drawnTile
 
 
     def second_phase(self):
