@@ -53,7 +53,8 @@ export default function MahjongTable({ state, actions }) {
     currentTurnSeat,
     yourSeat,
     centerDiscards,
-    isMyTurn, 
+    isMyTurn,
+    discarded, 
   } = state || {};
 
   return (
@@ -61,7 +62,7 @@ export default function MahjongTable({ state, actions }) {
       <div className="mj__center">
         <div className="mj__status">
           Turn: Seat {currentTurnSeat ?? "?"}{" "}
-          {currentTurnSeat === yourSeat ? "(you)" : ""}
+          {isMyTurn  ? "(you)" : ""}
         </div>
         <CenterDiscards piles={centerDiscards} />
         </div>
@@ -102,7 +103,7 @@ export default function MahjongTable({ state, actions }) {
                     key={t.uid}
                     tile={t}
                     onClick={(tile) => actions?.discard?.(tile)}
-                    disabled={!state?.isMyTurn || !state?.drewThisTurn}
+                    disabled={!state?.isMyTurn || !state?.drewThisTurn || state?.discarded}
                   />
                 ))}
               </div>

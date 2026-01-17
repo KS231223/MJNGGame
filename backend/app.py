@@ -61,6 +61,7 @@ def game_action(data):
         emit('possible-actions', {"actions": possible_actions[sid], "tile": tile}, to=sid)
 
     elif data["type"] == "discard":
+        print("discarded!")
         tile = data["tile"]
         table.game.discard_tile(sid, tile)
         win, pong_or_kong, chi = table.game.second_phase()
@@ -77,7 +78,8 @@ def game_action(data):
             "responses": {},  # sid -> choice
         }        
         #only send highest priority action
-        #probably add another priority check here (highest p) for any card to play
+        print(table.game.pending)
+        print()
         if win:
             send_action(table, "win", win) 
         elif pong_or_kong:
@@ -151,6 +153,9 @@ def on_leave_room(data):
 
 #helper func
 def send_action(table, tier, entries):
+
+    print(tier)
+    print(entries)
     # entries is list of (sid, payload)
     table.game.pending["tier"] = tier
     table.game.pending["eligible"] = list({sid for sid, _, _ in entries})

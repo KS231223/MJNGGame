@@ -13,6 +13,9 @@ export default function TablePage() {
 
   const [tableState, setTableState] = useState(null);
 
+  const [discarded, setDiscarded] = useState(false);
+  const discardedRef = useRef(false);
+
   // draw-phase guard
   const [drewThisTurn, setDrewThisTurn] = useState(false);
   const drewRef = useRef(false);
@@ -69,6 +72,8 @@ export default function TablePage() {
         drewRef.current = false;
         setDrewThisTurn(false);
         setPossibleActions([]);
+        discardedRef.current = false;
+        setDiscarded(false);
       }
 
       // AUTO-DRAW: only if it's your turn and you haven't drawn yet
@@ -76,6 +81,9 @@ export default function TablePage() {
         drewRef.current = true;
         setDrewThisTurn(true);
         socket.emit("game-action", { tableId, type: "draw" });
+        discardedRef.current = false;
+        setDiscarded(false);
+
       }
 
       setTableState(merged);
@@ -101,12 +109,17 @@ export default function TablePage() {
           drewRef.current = false;
           setDrewThisTurn(false);
           setPossibleActions([]);
+          discardedRef.current = false;
+          setDiscarded(false);
+
         }
 
         // AUTO-DRAW: only once per turn, only when it's your turn
         if (next.isMyTurn && !drewRef.current) {
           drewRef.current = true;
           setDrewThisTurn(true);
+          discardedRef.current = false;
+          setDiscarded(false);
           socket.emit("game-action", { tableId, type: "draw" });
         }
 
@@ -154,9 +167,16 @@ export default function TablePage() {
     const onDiscardTile = ({ tile, sid: discarderSid }) => {
       setTableState((prev) => {
         if (!prev) return prev;
-
+        if (discarderSid && discarderSid === tableState?.yourSid) {
+          discardedRef.current = true;
+          setDiscarded(true);
+        }
+        
         const players = Array.isArray(prev.players) ? prev.players : [];
         const mySid = prev.yourSid;
+
+        discardedRef.current = true;
+        setDiscarded(true);
 
         const myIndex = players.findIndex((p) => p.sid === mySid);
         const discarderIndex = players.findIndex((p) => p.sid === discarderSid);
@@ -232,22 +252,22 @@ export default function TablePage() {
         const canAct = !!tableState?.isMyTurn;
         if (!canAct) return;
         if (!drewRef.current) return;
+        if (discardedRef.current) return;
+
+        discardedRef.current = true;
+        setDiscarded(true);
 
         socket.emit("game-action", { tableId, type: "discard", tile });
 
-        // optimistic UI: remove from hand
         setTableState((prev) => {
           if (!prev) return prev;
           const hand = Array.isArray(prev.yourHand) ? prev.yourHand : [];
           return { ...prev, yourHand: hand.filter((t) => (t?.uid ?? "") !== (tile?.uid ?? "")) };
         });
 
-        // clear possible actions after choosing
         setPossibleActions([]);
-        // DON'T reset drewThisTurn here; let turn change reset it.
       },
-
-
+      
       call: (callType) => {
         if (!canAct) return;
         if (!drewRef.current) return;
