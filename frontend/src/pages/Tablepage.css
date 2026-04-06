@@ -1,0 +1,84 @@
+.tablepage {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tablepage__topbar {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #2c2c2c;
+  border-bottom: 1px solid #444;
+}
+
+.tablepage__title {
+  font-size: 16px;
+  margin: 0;
+  color: #fff;
+}
+
+.tablepage__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.tablepage__btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  background: #444;
+  color: #fff;
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tablepage__btn:hover {
+  background: #555;
+}
+
+.tablepage__main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  overflow: hidden;
+}
+
+.tablepage__board {
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+  display: flex;
+}
+
+
+/* hide chat column completely when closed */
+.tablepage:not(.tablepage--chat-open) .tablepage__main {
+  grid-template-columns: 1fr;
+}
+
+.tablepage__chat.is-hidden {
+  display: none;
+}
+
+.tablepage__chat {
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid #ddd;
+  background: #fff;
+}
+
+.board__card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
